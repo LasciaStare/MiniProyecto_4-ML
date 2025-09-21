@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.OneHotEncoderModel","timestamp":1758492338638,"sparkVersion":"4.0.1","uid":"OneHotEncoder_7a069e4a34e8","paramMap":{"outputCol":"addr_state_vec","inputCol":"addr_state_index"},"defaultParamMap":{"outputCol":"OneHotEncoder_7a069e4a34e8__output","dropLast":true,"handleInvalid":"error"}}

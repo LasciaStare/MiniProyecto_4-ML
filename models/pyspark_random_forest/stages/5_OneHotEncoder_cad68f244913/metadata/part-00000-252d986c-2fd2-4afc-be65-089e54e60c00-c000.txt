@@ -1,0 +1,1 @@
+{"class":"org.apache.spark.ml.feature.OneHotEncoderModel","timestamp":1758492338491,"sparkVersion":"4.0.1","uid":"OneHotEncoder_cad68f244913","paramMap":{"outputCol":"home_ownership_vec","inputCol":"home_ownership_index"},"defaultParamMap":{"outputCol":"OneHotEncoder_cad68f244913__output","dropLast":true,"handleInvalid":"error"}}
