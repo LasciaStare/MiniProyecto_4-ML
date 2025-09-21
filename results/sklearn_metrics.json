@@ -1,0 +1,14 @@
+{
+    "best_params": {
+        "classifier__max_depth": 15,
+        "classifier__n_estimators": 100
+    },
+    "metrics": {
+        "Accuracy": 0.8006333112814147,
+        "Precision": 0.6495726495726496,
+        "Recall": 0.002829907655644921,
+        "F1-score": 0.005635264894524154,
+        "ROC AUC": 0.7028196162020953
+    },
+    "training_time_seconds": 1547.4377527236938
+}
