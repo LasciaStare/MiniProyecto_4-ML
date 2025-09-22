@@ -2,9 +2,9 @@
 # Learn more at https://jupyterbook.org/customize/toc.html
 
 format: jb-book
-root: eda
+root: notebooks/01_EDA_and_Preprocessing
 chapters:
-  - file: model
-  - file: pyspar
-  - file: lime
-  - file: compara
+  - file: notebooks/02_Sklearn_Modeling
+  - file: notebooks/03_PySpark_Modeling
+  - file: notebooks/04_Interpretability_LIME
+  - file: notebooks/05_Comparison_and_Conclusion
