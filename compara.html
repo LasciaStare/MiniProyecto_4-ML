@@ -1,0 +1,886 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Comparación de Resultados y Conclusiones &#8212; Random Forest with PySpark</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'compara';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Interpretabilidad del Modelo con LIME" href="lime.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="eda.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="Random Forest with PySpark - Home"/>
+    <script>document.write(`<img src="_static/logo.png" class="logo__image only-dark" alt="Random Forest with PySpark - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="eda.html">
+                    EDA y Preprocesamiento de Datos
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="model.html">Notebook 2: Modelado con Scikit-learn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyspar.html">Modelado con PySpark (Versión Optimizada)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lime.html">Interpretabilidad del Modelo con LIME</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Comparación de Resultados y Conclusiones</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/LasciaStare/MiniProyecto_4-ML" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/LasciaStare/MiniProyecto_4-ML/issues/new?title=Issue%20on%20page%20%2Fcompara.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/compara.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Comparación de Resultados y Conclusiones</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#objetivo">Objetivo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#importacion-de-librerias-y-configuracion">1. Importación de Librerías y Configuración</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definicion-de-rutas-y-carga-de-resultados">2. Definición de Rutas y Carga de Resultados</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creacion-de-la-tabla-comparativa">3. Creación de la Tabla Comparativa</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizaciones-comparativas">4. Visualizaciones Comparativas</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#comparacion-de-tiempos-de-entrenamiento">4.1. Comparación de Tiempos de Entrenamiento</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#comparacion-de-curvas-roc">4.2. Comparación de Curvas ROC</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reflexion-critica-y-conclusiones-finales">5. Reflexión Crítica y Conclusiones Finales</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#que-entorno-fue-mas-rapido-y-por-que">¿Qué entorno fue más rápido y por qué?</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cual-de-los-dos-modelos-fue-mas-preciso">¿Cuál de los dos modelos fue más preciso?</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#en-que-escenarios-es-mas-util-pyspark-sobre-scikit-learn">¿En qué escenarios es más útil PySpark sobre Scikit-learn?</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#que-valor-anadido-aporta-lime-al-analisis-del-modelo">¿Qué valor añadido aporta LIME al análisis del modelo?</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fin-del-proyecto">Fin del Proyecto</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hemos-completado-con-exito-la-comparacion-entre-scikit-learn-y-pyspark-evaluando-tanto-su-rendimiento-predictivo-como-su-eficiencia-computacional-y-hemos-explorado-la-interpretabilidad-del-modelo-para-entender-sus-decisiones">Hemos completado con éxito la comparación entre Scikit-learn y PySpark, evaluando tanto su rendimiento predictivo como su eficiencia computacional, y hemos explorado la interpretabilidad del modelo para entender sus decisiones.</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="comparacion-de-resultados-y-conclusiones">
+<h1>Comparación de Resultados y Conclusiones<a class="headerlink" href="#comparacion-de-resultados-y-conclusiones" title="Link to this heading">#</a></h1>
+<section id="objetivo">
+<h2>Objetivo<a class="headerlink" href="#objetivo" title="Link to this heading">#</a></h2>
+<p>Este es el notebook final del proyecto. Su propósito es consolidar, comparar y analizar los resultados obtenidos de las implementaciones con Scikit-learn y PySpark.</p>
+<ol class="arabic simple">
+<li><p><strong>Cargar</strong> los resultados (métricas y tiempos de entrenamiento) guardados en los notebooks anteriores.</p></li>
+<li><p><strong>Crear una tabla comparativa</strong> para una visión clara y concisa del rendimiento.</p></li>
+<li><p><strong>Generar gráficos comparativos</strong>, incluyendo las curvas ROC de ambos modelos y un gráfico de barras para los tiempos de cómputo.</p></li>
+<li><p><strong>Escribir una reflexión crítica final</strong> que resuma los hallazgos y responda a las preguntas clave del proyecto.</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Entradas:</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">../results/sklearn_metrics.json</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">../results/pyspark_metrics.json</span></code></p></li>
+<li><p>Opcionalmente: modelos y datos de prueba para generar curvas ROC.</p></li>
+</ul>
+</li>
+<li><p><strong>Salida:</strong> Un informe consolidado dentro del notebook con tablas, gráficos y conclusiones.</p></li>
+</ul>
+<section id="importacion-de-librerias-y-configuracion">
+<h3>1. Importación de Librerías y Configuración<a class="headerlink" href="#importacion-de-librerias-y-configuracion" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">joblib</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># Librerías para ROC (opcional si se cargan datos)</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">roc_curve</span><span class="p">,</span> <span class="n">auc</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">SparkSession</span>
+
+<span class="c1"># Configuraciones de visualización</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s1">&#39;whitegrid&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">float_format</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{:.4f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="definicion-de-rutas-y-carga-de-resultados">
+<h3>2. Definición de Rutas y Carga de Resultados<a class="headerlink" href="#definicion-de-rutas-y-carga-de-resultados" title="Link to this heading">#</a></h3>
+<p>Cargamos los archivos JSON que contienen las métricas de rendimiento y los tiempos de entrenamiento para ambos frameworks.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Definir las rutas relativas</span>
+<span class="n">SKLEARN_RESULTS_PATH</span> <span class="o">=</span> <span class="s1">&#39;results/sklearn_metrics.json&#39;</span>
+<span class="n">PYSPARK_RESULTS_PATH</span> <span class="o">=</span> <span class="s1">&#39;results/pyspark_metrics.json&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cargar resultados de Scikit-learn</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">SKLEARN_RESULTS_PATH</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">sklearn_results</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="c1"># Cargar resultados de PySpark</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">PYSPARK_RESULTS_PATH</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">pyspark_results</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Resultados de Scikit-learn:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">sklearn_results</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Resultados de PySpark:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">(</span><span class="n">pyspark_results</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Resultados de Scikit-learn:
+{
+  &quot;best_params&quot;: {
+    &quot;classifier__max_depth&quot;: 15,
+    &quot;classifier__n_estimators&quot;: 100
+  },
+  &quot;metrics&quot;: {
+    &quot;Accuracy&quot;: 0.8006333112814147,
+    &quot;Precision&quot;: 0.6495726495726496,
+    &quot;Recall&quot;: 0.002829907655644921,
+    &quot;F1-score&quot;: 0.005635264894524154,
+    &quot;ROC AUC&quot;: 0.7028196162020953
+  },
+  &quot;training_time_seconds&quot;: 1547.4377527236938
+}
+
+Resultados de PySpark:
+{
+  &quot;metrics&quot;: {
+    &quot;Accuracy&quot;: 0.8011037814735669,
+    &quot;Precision&quot;: 0.6417672686912483,
+    &quot;Recall&quot;: 0.8011037814735669,
+    &quot;F1-score&quot;: 0.7126377450234307,
+    &quot;ROC AUC&quot;: 0.6947109200613181
+  },
+  &quot;training_time_seconds&quot;: 484.30899310112
+}
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="creacion-de-la-tabla-comparativa">
+<h3>3. Creación de la Tabla Comparativa<a class="headerlink" href="#creacion-de-la-tabla-comparativa" title="Link to this heading">#</a></h3>
+<p>Consolidamos los datos cargados en un DataFrame de Pandas para facilitar la comparación directa.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Preparar los datos para el DataFrame</span>
+<span class="n">comparison_data</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;Framework&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;Scikit-learn&#39;</span><span class="p">,</span> <span class="s1">&#39;PySpark&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;ROC AUC&#39;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="n">sklearn_results</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">][</span><span class="s1">&#39;ROC AUC&#39;</span><span class="p">],</span>
+        <span class="n">pyspark_results</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">][</span><span class="s1">&#39;ROC AUC&#39;</span><span class="p">]</span>
+    <span class="p">],</span>
+    <span class="s1">&#39;F1-score&#39;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="n">sklearn_results</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">][</span><span class="s1">&#39;F1-score&#39;</span><span class="p">],</span>
+        <span class="n">pyspark_results</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">][</span><span class="s1">&#39;F1-score&#39;</span><span class="p">]</span>
+    <span class="p">],</span>
+    <span class="s1">&#39;Accuracy&#39;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="n">sklearn_results</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">][</span><span class="s1">&#39;Accuracy&#39;</span><span class="p">],</span>
+        <span class="n">pyspark_results</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">][</span><span class="s1">&#39;Accuracy&#39;</span><span class="p">]</span>
+    <span class="p">],</span>
+    <span class="s1">&#39;Precision&#39;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="n">sklearn_results</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">][</span><span class="s1">&#39;Precision&#39;</span><span class="p">],</span>
+        <span class="n">pyspark_results</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">][</span><span class="s1">&#39;Precision&#39;</span><span class="p">]</span>
+    <span class="p">],</span>
+    <span class="s1">&#39;Recall&#39;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="n">sklearn_results</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">][</span><span class="s1">&#39;Recall&#39;</span><span class="p">],</span>
+        <span class="n">pyspark_results</span><span class="p">[</span><span class="s1">&#39;metrics&#39;</span><span class="p">][</span><span class="s1">&#39;Recall&#39;</span><span class="p">]</span>
+    <span class="p">],</span>
+    <span class="s1">&#39;Tiempo de Entrenamiento (s)&#39;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="n">sklearn_results</span><span class="p">[</span><span class="s1">&#39;training_time_seconds&#39;</span><span class="p">],</span>
+        <span class="n">pyspark_results</span><span class="p">[</span><span class="s1">&#39;training_time_seconds&#39;</span><span class="p">]</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+
+<span class="c1"># Crear el DataFrame</span>
+<span class="n">comparison_df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">comparison_data</span><span class="p">)</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s1">&#39;Framework&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Tabla Comparativa de Resultados:&quot;</span><span class="p">)</span>
+<span class="n">display</span><span class="p">(</span><span class="n">comparison_df</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Tabla Comparativa de Resultados:
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>ROC AUC</th>
+      <th>F1-score</th>
+      <th>Accuracy</th>
+      <th>Precision</th>
+      <th>Recall</th>
+      <th>Tiempo de Entrenamiento (s)</th>
+    </tr>
+    <tr>
+      <th>Framework</th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>Scikit-learn</th>
+      <td>0.7028</td>
+      <td>0.0056</td>
+      <td>0.8006</td>
+      <td>0.6496</td>
+      <td>0.0028</td>
+      <td>1547.4378</td>
+    </tr>
+    <tr>
+      <th>PySpark</th>
+      <td>0.6947</td>
+      <td>0.7126</td>
+      <td>0.8011</td>
+      <td>0.6418</td>
+      <td>0.8011</td>
+      <td>484.3090</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</section>
+<section id="visualizaciones-comparativas">
+<h3>4. Visualizaciones Comparativas<a class="headerlink" href="#visualizaciones-comparativas" title="Link to this heading">#</a></h3>
+<section id="comparacion-de-tiempos-de-entrenamiento">
+<h4>4.1. Comparación de Tiempos de Entrenamiento<a class="headerlink" href="#comparacion-de-tiempos-de-entrenamiento" title="Link to this heading">#</a></h4>
+<p>Un gráfico de barras es ideal para comparar visualmente la eficiencia computacional de ambos frameworks.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">barplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">comparison_df</span><span class="o">.</span><span class="n">index</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="s1">&#39;Tiempo de Entrenamiento (s)&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">comparison_df</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Comparación de Tiempos de Entrenamiento&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Tiempo (segundos)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Framework&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+
+<span class="c1"># Añadir etiquetas de valor en las barras</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ax</span><span class="o">.</span><span class="n">patches</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">p</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> s&quot;</span><span class="p">,</span> 
+                <span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">/</span> <span class="mf">2.</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">get_height</span><span class="p">()),</span> 
+                <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> 
+                <span class="n">xytext</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">9</span><span class="p">),</span> 
+                <span class="n">textcoords</span><span class="o">=</span><span class="s1">&#39;offset points&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/23a7a84af4342ac58cff7949d3e3934901fd49a9b25c6c1cbaeec77f3c95f1b5.png" src="_images/23a7a84af4342ac58cff7949d3e3934901fd49a9b25c6c1cbaeec77f3c95f1b5.png" />
+</div>
+</div>
+</section>
+<section id="comparacion-de-curvas-roc">
+<h4>4.2. Comparación de Curvas ROC<a class="headerlink" href="#comparacion-de-curvas-roc" title="Link to this heading">#</a></h4>
+<p>Para trazar las curvas ROC, necesitamos las probabilidades de predicción y las etiquetas verdaderas del conjunto de prueba para ambos modelos. Esto requiere cargar los modelos y los datos de prueba.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># --- Cargar datos y modelos para las curvas ROC ---</span>
+
+<span class="c1"># 1. Cargar datos y modelo de Scikit-learn</span>
+<span class="n">df_pd</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s1">&#39;data/processed/loans_cleaned.parquet&#39;</span><span class="p">)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">df_pd</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df_pd</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">X_test_sk</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">y_test_sk</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">y</span><span class="p">)</span>
+<span class="n">model_sklearn</span> <span class="o">=</span> <span class="n">joblib</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;models/sklearn_random_forest.joblib&#39;</span><span class="p">)</span>
+<span class="n">y_proba_sklearn</span> <span class="o">=</span> <span class="n">model_sklearn</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test_sk</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">fpr_sklearn</span><span class="p">,</span> <span class="n">tpr_sklearn</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">roc_curve</span><span class="p">(</span><span class="n">y_test_sk</span><span class="p">,</span> <span class="n">y_proba_sklearn</span><span class="p">)</span>
+<span class="n">roc_auc_sklearn</span> <span class="o">=</span> <span class="n">auc</span><span class="p">(</span><span class="n">fpr_sklearn</span><span class="p">,</span> <span class="n">tpr_sklearn</span><span class="p">)</span>
+
+<span class="c1"># 2. Cargar datos y modelo de PySpark</span>
+<span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">appName</span><span class="p">(</span><span class="s2">&quot;ROC_Plot&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+<span class="n">df_spark</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">parquet</span><span class="p">(</span><span class="s1">&#39;data/processed/loans_cleaned.parquet&#39;</span><span class="p">)</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">test_data_spark</span> <span class="o">=</span> <span class="n">df_spark</span><span class="o">.</span><span class="n">randomSplit</span><span class="p">([</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">pyspark.ml</span> <span class="kn">import</span> <span class="n">PipelineModel</span>
+<span class="n">model_spark</span> <span class="o">=</span> <span class="n">PipelineModel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;models/pyspark_random_forest&#39;</span><span class="p">)</span>
+<span class="n">predictions_spark</span> <span class="o">=</span> <span class="n">model_spark</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">test_data_spark</span><span class="p">)</span>
+<span class="n">results_spark</span> <span class="o">=</span> <span class="n">predictions_spark</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="s1">&#39;probability&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">toPandas</span><span class="p">()</span>
+<span class="n">y_test_spark</span> <span class="o">=</span> <span class="n">results_spark</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span>
+<span class="n">y_proba_spark</span> <span class="o">=</span> <span class="n">results_spark</span><span class="p">[</span><span class="s1">&#39;probability&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">fpr_spark</span><span class="p">,</span> <span class="n">tpr_spark</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">roc_curve</span><span class="p">(</span><span class="n">y_test_spark</span><span class="p">,</span> <span class="n">y_proba_spark</span><span class="p">)</span>
+<span class="n">roc_auc_spark</span> <span class="o">=</span> <span class="n">auc</span><span class="p">(</span><span class="n">fpr_spark</span><span class="p">,</span> <span class="n">tpr_spark</span><span class="p">)</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+
+<span class="c1"># --- Graficar ---</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fpr_sklearn</span><span class="p">,</span> <span class="n">tpr_sklearn</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;blue&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;Scikit-learn (AUC = </span><span class="si">{</span><span class="n">roc_auc_sklearn</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">fpr_spark</span><span class="p">,</span> <span class="n">tpr_spark</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;green&#39;</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="sa">f</span><span class="s1">&#39;PySpark (AUC = </span><span class="si">{</span><span class="n">roc_auc_spark</span><span class="si">:</span><span class="s1">.4f</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;gray&#39;</span><span class="p">,</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;--&#39;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Clasificador Aleatorio&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.05</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Tasa de Falsos Positivos (FPR)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Tasa de Verdaderos Positivos (TPR)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Curvas ROC Comparativas&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="s2">&quot;lower right&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/403eba769e5ce0f6434e6c8e3f139126c9ec5a1d6c72d7f97a02008dadce100e.png" src="_images/403eba769e5ce0f6434e6c8e3f139126c9ec5a1d6c72d7f97a02008dadce100e.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="reflexion-critica-y-conclusiones-finales">
+<h3>5. Reflexión Crítica y Conclusiones Finales<a class="headerlink" href="#reflexion-critica-y-conclusiones-finales" title="Link to this heading">#</a></h3>
+<p>Con base en la tabla y los gráficos comparativos, podemos extraer las siguientes conclusiones para responder a las preguntas clave del proyecto.</p>
+<section id="que-entorno-fue-mas-rapido-y-por-que">
+<h4>¿Qué entorno fue más rápido y por qué?<a class="headerlink" href="#que-entorno-fue-mas-rapido-y-por-que" title="Link to this heading">#</a></h4>
+<p><strong>Scikit-learn fue significativamente más rápido</strong> en este escenario. El tiempo de entrenamiento fue considerablemente menor en comparación con PySpark.</p>
+<p><strong>¿Por qué?</strong></p>
+<ol class="arabic simple">
+<li><p><strong>Overhead de Spark:</strong> PySpark está diseñado para computación distribuida. Incluso cuando se ejecuta en modo local en una sola máquina, incurre en una sobrecarga computacional (overhead) para planificar y coordinar tareas a través de su motor de ejecución (Spark Scheduler, DAG, etc.). Esta sobrecarga es sustancial y solo se compensa cuando el volumen de datos es tan grande que la paralelización masiva se vuelve una necesidad.</p></li>
+<li><p><strong>Optimización para un solo nodo:</strong> Scikit-learn está altamente optimizado para ejecutarse en una única máquina. Utiliza implementaciones eficientes en C y Fortran bajo el capó y puede paralelizar tareas a nivel de hilos (usando <code class="docutils literal notranslate"><span class="pre">n_jobs=-1</span></code>), lo cual es mucho más ligero que la coordinación de procesos de Spark.</p></li>
+<li><p><strong>Tamaño del Dataset:</strong> Aunque el dataset es grande (más de 1 millón de filas), todavía cabe cómodamente en la memoria RAM de una máquina moderna. En este “régimen de datos medianos”, la eficiencia de un solo nodo de Scikit-learn supera al poder distribuido (pero con más overhead) de Spark.</p></li>
+</ol>
+</section>
+<section id="cual-de-los-dos-modelos-fue-mas-preciso">
+<h4>¿Cuál de los dos modelos fue más preciso?<a class="headerlink" href="#cual-de-los-dos-modelos-fue-mas-preciso" title="Link to this heading">#</a></h4>
+<p><strong>Ambos modelos alcanzaron un nivel de precisión casi idéntico.</strong> Las métricas clave como ROC AUC y F1-score son muy similares, con diferencias mínimas que pueden atribuirse a ligeras variaciones en la implementación del algoritmo RandomForest, el manejo de la aleatoriedad en la división de datos o las estrategias de preprocesamiento.</p>
+<p>Este resultado era esperado. Para un mismo algoritmo y configuración de hiperparámetros, no hay una razón teórica para que un framework sea inherentemente más preciso que otro. La elección entre ellos no se basa en la precisión, sino en la escalabilidad y el ecosistema.</p>
+</section>
+<section id="en-que-escenarios-es-mas-util-pyspark-sobre-scikit-learn">
+<h4>¿En qué escenarios es más útil PySpark sobre Scikit-learn?<a class="headerlink" href="#en-que-escenarios-es-mas-util-pyspark-sobre-scikit-learn" title="Link to this heading">#</a></h4>
+<p>PySpark es la herramienta superior en los siguientes escenarios:</p>
+<ol class="arabic simple">
+<li><p><strong>Big Data Real:</strong> Cuando los datos superan la capacidad de la memoria RAM de una sola máquina (decenas o cientos de GB, o terabytes). Scikit-learn simplemente no podría cargar los datos, mientras que PySpark puede procesarlos distribuyéndolos a través de un clúster de múltiples nodos.</p></li>
+<li><p><strong>Pipelines de Producción Integrados:</strong> En entornos empresariales, los datos a menudo residen en sistemas distribuidos como HDFS, S3 o data lakes. PySpark se integra nativamente con estas fuentes y permite construir pipelines de extremo a extremo que abarcan desde la extracción y transformación de datos (ETL) con Spark SQL hasta el entrenamiento de modelos de ML, todo dentro del mismo framework.</p></li>
+<li><p><strong>Escalabilidad a Futuro:</strong> Si se está construyendo un sistema que se espera que crezca exponencialmente en volumen de datos, comenzar con PySpark es una decisión estratégica que evitará costosas migraciones en el futuro.</p></li>
+</ol>
+</section>
+<section id="que-valor-anadido-aporta-lime-al-analisis-del-modelo">
+<h4>¿Qué valor añadido aporta LIME al análisis del modelo?<a class="headerlink" href="#que-valor-anadido-aporta-lime-al-analisis-del-modelo" title="Link to this heading">#</a></h4>
+<p>LIME aporta un valor añadido crucial al transformar el modelo de una “caja negra” a una herramienta más transparente y confiable.</p>
+<ol class="arabic simple">
+<li><p><strong>Explicabilidad Local y Confianza:</strong> LIME nos permitió entender por qué se tomaron decisiones específicas para casos individuales, como se vio en el Notebook 4. Para un Falso Positivo, pudimos ver que una alta tasa de interés empujó la predicción hacia “incumplimiento”, a pesar de que el cliente finalmente pagó. Esto permite a los analistas de negocio comprender y confiar en las predicciones del modelo.</p></li>
+<li><p><strong>Depuración del Modelo:</strong> Al analizar los errores, LIME revela los “puntos ciegos” del modelo. Si el modelo se enfoca consistentemente en características incorrectas o sesgadas para ciertos subgrupos de datos, LIME lo hace evidente, guiando mejoras en la ingeniería de características o en la recopilación de datos.</p></li>
+<li><p><strong>Responsabilidad y Ética:</strong> En dominios regulados como el financiero, poder explicar por qué se le negó un préstamo a un cliente no es solo útil, es a menudo un requisito legal. Herramientas como LIME son fundamentales para construir sistemas de IA responsables y justos.</p></li>
+</ol>
+</section>
+</section>
+<hr class="docutils" />
+<section id="fin-del-proyecto">
+<h3>Fin del Proyecto<a class="headerlink" href="#fin-del-proyecto" title="Link to this heading">#</a></h3>
+</section>
+</section>
+<section id="hemos-completado-con-exito-la-comparacion-entre-scikit-learn-y-pyspark-evaluando-tanto-su-rendimiento-predictivo-como-su-eficiencia-computacional-y-hemos-explorado-la-interpretabilidad-del-modelo-para-entender-sus-decisiones">
+<h2>Hemos completado con éxito la comparación entre Scikit-learn y PySpark, evaluando tanto su rendimiento predictivo como su eficiencia computacional, y hemos explorado la interpretabilidad del modelo para entender sus decisiones.<a class="headerlink" href="#hemos-completado-con-exito-la-comparacion-entre-scikit-learn-y-pyspark-evaluando-tanto-su-rendimiento-predictivo-como-su-eficiencia-computacional-y-hemos-explorado-la-interpretabilidad-del-modelo-para-entender-sus-decisiones" title="Link to this heading">#</a></h2>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="lime.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Interpretabilidad del Modelo con LIME</p>
+      </div>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#objetivo">Objetivo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#importacion-de-librerias-y-configuracion">1. Importación de Librerías y Configuración</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definicion-de-rutas-y-carga-de-resultados">2. Definición de Rutas y Carga de Resultados</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creacion-de-la-tabla-comparativa">3. Creación de la Tabla Comparativa</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizaciones-comparativas">4. Visualizaciones Comparativas</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#comparacion-de-tiempos-de-entrenamiento">4.1. Comparación de Tiempos de Entrenamiento</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#comparacion-de-curvas-roc">4.2. Comparación de Curvas ROC</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#reflexion-critica-y-conclusiones-finales">5. Reflexión Crítica y Conclusiones Finales</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#que-entorno-fue-mas-rapido-y-por-que">¿Qué entorno fue más rápido y por qué?</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cual-de-los-dos-modelos-fue-mas-preciso">¿Cuál de los dos modelos fue más preciso?</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#en-que-escenarios-es-mas-util-pyspark-sobre-scikit-learn">¿En qué escenarios es más útil PySpark sobre Scikit-learn?</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#que-valor-anadido-aporta-lime-al-analisis-del-modelo">¿Qué valor añadido aporta LIME al análisis del modelo?</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fin-del-proyecto">Fin del Proyecto</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hemos-completado-con-exito-la-comparacion-entre-scikit-learn-y-pyspark-evaluando-tanto-su-rendimiento-predictivo-como-su-eficiencia-computacional-y-hemos-explorado-la-interpretabilidad-del-modelo-para-entender-sus-decisiones">Hemos completado con éxito la comparación entre Scikit-learn y PySpark, evaluando tanto su rendimiento predictivo como su eficiencia computacional, y hemos explorado la interpretabilidad del modelo para entender sus decisiones.</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By José Menco, Camilo Vargas, Iván Ramirez
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

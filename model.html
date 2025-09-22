@@ -1,0 +1,986 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Notebook 2: Modelado con Scikit-learn &#8212; Random Forest with PySpark</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'model';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Modelado con PySpark (Versión Optimizada)" href="pyspar.html" />
+    <link rel="prev" title="EDA y Preprocesamiento de Datos" href="eda.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="eda.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="Random Forest with PySpark - Home"/>
+    <script>document.write(`<img src="_static/logo.png" class="logo__image only-dark" alt="Random Forest with PySpark - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="eda.html">
+                    EDA y Preprocesamiento de Datos
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Notebook 2: Modelado con Scikit-learn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="pyspar.html">Modelado con PySpark (Versión Optimizada)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lime.html">Interpretabilidad del Modelo con LIME</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compara.html">Comparación de Resultados y Conclusiones</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/LasciaStare/MiniProyecto_4-ML" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/LasciaStare/MiniProyecto_4-ML/issues/new?title=Issue%20on%20page%20%2Fmodel.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/model.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Notebook 2: Modelado con Scikit-learn</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#objetivo">Objetivo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#importacion-de-librerias">1. Importación de Librerías</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definicion-de-rutas-y-carga-de-datos">2. Definición de Rutas y Carga de Datos</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#preparacion-de-datos-para-el-modelo">3. Preparación de Datos para el Modelo</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#construccion-del-pipeline-de-preprocesamiento-y-modelado">4. Construcción del Pipeline de Preprocesamiento y Modelado</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#entrenamiento-y-ajuste-de-hiperparametros-con-gridsearchcv">5. Entrenamiento y Ajuste de Hiperparámetros con GridSearchCV</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluacion-del-mejor-modelo">6. Evaluación del Mejor Modelo</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#matriz-de-confusion">Matriz de Confusión</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#guardado-de-artefactos-modelo-y-resultados">7. Guardado de Artefactos (Modelo y Resultados)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fin-del-notebook-2">Fin del Notebook 2</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hemos-entrenado-y-evaluado-con-exito-un-modelo-randomforest-utilizando-scikit-learn-los-artefactos-resultantes-estan-listos-para-el-siguiente-paso-que-sera-realizar-el-mismo-proceso-con-pyspark">Hemos entrenado y evaluado con éxito un modelo RandomForest utilizando Scikit-learn. Los artefactos resultantes están listos para el siguiente paso, que será realizar el mismo proceso con PySpark.</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="notebook-2-modelado-con-scikit-learn">
+<h1>Notebook 2: Modelado con Scikit-learn<a class="headerlink" href="#notebook-2-modelado-con-scikit-learn" title="Link to this heading">#</a></h1>
+<section id="objetivo">
+<h2>Objetivo<a class="headerlink" href="#objetivo" title="Link to this heading">#</a></h2>
+<p>Este notebook se enfoca en construir, entrenar y evaluar un modelo de clasificación utilizando el ecosistema de Scikit-learn. Las tareas específicas son:</p>
+<ol class="arabic simple">
+<li><p><strong>Cargar</strong> el conjunto de datos limpio generado en el notebook anterior.</p></li>
+<li><p><strong>Construir un pipeline de preprocesamiento</strong> para manejar la imputación, codificación y escalado de características.</p></li>
+<li><p><strong>Entrenar un <code class="docutils literal notranslate"><span class="pre">RandomForestClassifier</span></code></strong> y optimizar sus hiperparámetros usando <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code>.</p></li>
+<li><p><strong>Evaluar</strong> el rendimiento del mejor modelo en el conjunto de prueba.</p></li>
+<li><p><strong>Guardar</strong> el modelo entrenado y sus métricas de rendimiento para su uso posterior.</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Entrada:</strong> <code class="docutils literal notranslate"><span class="pre">../data/processed/loans_cleaned.parquet</span></code></p></li>
+<li><p><strong>Salidas:</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">../models/sklearn_random_forest.joblib</span></code> (El pipeline del modelo entrenado)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">../results/sklearn_metrics.json</span></code> (Las métricas de evaluación y el tiempo de entrenamiento)</p></li>
+</ul>
+</li>
+</ul>
+<section id="importacion-de-librerias">
+<h3>1. Importación de Librerías<a class="headerlink" href="#importacion-de-librerias" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">joblib</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1"># Scikit-learn</span>
+<span class="kn">from</span> <span class="nn">sklearn.model_selection</span> <span class="kn">import</span> <span class="n">train_test_split</span><span class="p">,</span> <span class="n">GridSearchCV</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span><span class="p">,</span> <span class="n">OneHotEncoder</span>
+<span class="kn">from</span> <span class="nn">sklearn.compose</span> <span class="kn">import</span> <span class="n">ColumnTransformer</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.impute</span> <span class="kn">import</span> <span class="n">SimpleImputer</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="p">(</span>
+    <span class="n">accuracy_score</span><span class="p">,</span> <span class="n">precision_score</span><span class="p">,</span> <span class="n">recall_score</span><span class="p">,</span> <span class="n">f1_score</span><span class="p">,</span> <span class="n">roc_auc_score</span><span class="p">,</span>
+    <span class="n">confusion_matrix</span><span class="p">,</span> <span class="n">ConfusionMatrixDisplay</span>
+<span class="p">)</span>
+
+<span class="c1"># Configuraciones de visualización</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s1">&#39;whitegrid&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="definicion-de-rutas-y-carga-de-datos">
+<h3>2. Definición de Rutas y Carga de Datos<a class="headerlink" href="#definicion-de-rutas-y-carga-de-datos" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Definir las rutas relativas</span>
+<span class="n">PROCESSED_DATA_PATH</span> <span class="o">=</span> <span class="s1">&#39;data/processed/loans_cleaned.parquet&#39;</span>
+<span class="n">MODEL_PATH</span> <span class="o">=</span> <span class="s1">&#39;models/sklearn_random_forest.joblib&#39;</span>
+<span class="n">RESULTS_PATH</span> <span class="o">=</span> <span class="s1">&#39;results/sklearn_metrics.json&#39;</span>
+<span class="n">MODELS_DIR</span> <span class="o">=</span> <span class="s1">&#39;models&#39;</span>
+<span class="n">RESULTS_DIR</span> <span class="o">=</span> <span class="s1">&#39;results&#39;</span>
+
+<span class="c1"># Crear los directorios de salida si no existen</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">MODELS_DIR</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">RESULTS_DIR</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cargar el dataset procesado</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="n">PROCESSED_DATA_PATH</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset cargado exitosamente desde &#39;</span><span class="si">{</span><span class="n">PROCESSED_DATA_PATH</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dimensiones del dataset: </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="n">df</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Dataset cargado exitosamente desde &#39;data/processed/loans_cleaned.parquet&#39;
+Dimensiones del dataset: (1345310, 10)
+</pre></div>
+</div>
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>loan_amnt</th>
+      <th>int_rate</th>
+      <th>fico_range_high</th>
+      <th>emp_length</th>
+      <th>annual_inc</th>
+      <th>purpose</th>
+      <th>home_ownership</th>
+      <th>dti</th>
+      <th>addr_state</th>
+      <th>default</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>3600.0</td>
+      <td>13.99</td>
+      <td>679.0</td>
+      <td>10.0</td>
+      <td>55000.0</td>
+      <td>debt_consolidation</td>
+      <td>MORTGAGE</td>
+      <td>5.91</td>
+      <td>PA</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>24700.0</td>
+      <td>11.99</td>
+      <td>719.0</td>
+      <td>10.0</td>
+      <td>65000.0</td>
+      <td>small_business</td>
+      <td>MORTGAGE</td>
+      <td>16.06</td>
+      <td>SD</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>20000.0</td>
+      <td>10.78</td>
+      <td>699.0</td>
+      <td>10.0</td>
+      <td>63000.0</td>
+      <td>home_improvement</td>
+      <td>MORTGAGE</td>
+      <td>10.78</td>
+      <td>IL</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>10400.0</td>
+      <td>22.45</td>
+      <td>699.0</td>
+      <td>3.0</td>
+      <td>104433.0</td>
+      <td>major_purchase</td>
+      <td>MORTGAGE</td>
+      <td>25.37</td>
+      <td>PA</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>11950.0</td>
+      <td>13.44</td>
+      <td>694.0</td>
+      <td>4.0</td>
+      <td>34000.0</td>
+      <td>debt_consolidation</td>
+      <td>RENT</td>
+      <td>10.20</td>
+      <td>GA</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+</table>
+</div></div></div>
+</div>
+</section>
+<section id="preparacion-de-datos-para-el-modelo">
+<h3>3. Preparación de Datos para el Modelo<a class="headerlink" href="#preparacion-de-datos-para-el-modelo" title="Link to this heading">#</a></h3>
+<p>Dividimos los datos en características (<code class="docutils literal notranslate"><span class="pre">X</span></code>) y variable objetivo (<code class="docutils literal notranslate"><span class="pre">y</span></code>), y luego en conjuntos de entrenamiento y prueba.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Separar características y variable objetivo</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span>
+
+<span class="c1"># Dividir en conjuntos de entrenamiento (80%) y prueba (20%)</span>
+<span class="c1"># Usamos stratify=y para mantener la proporción de clases en ambos conjuntos</span>
+<span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span>
+    <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">stratify</span><span class="o">=</span><span class="n">y</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Dimensiones de los conjuntos de datos:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X_train: </span><span class="si">{</span><span class="n">X_train</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, y_train: </span><span class="si">{</span><span class="n">y_train</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X_test: </span><span class="si">{</span><span class="n">X_test</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">, y_test: </span><span class="si">{</span><span class="n">y_test</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Dimensiones de los conjuntos de datos:
+X_train: (1076248, 9), y_train: (1076248,)
+X_test: (269062, 9), y_test: (269062,)
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="construccion-del-pipeline-de-preprocesamiento-y-modelado">
+<h3>4. Construcción del Pipeline de Preprocesamiento y Modelado<a class="headerlink" href="#construccion-del-pipeline-de-preprocesamiento-y-modelado" title="Link to this heading">#</a></h3>
+<p>Creamos un pipeline que automatiza todos los pasos: imputación de valores faltantes, codificación de variables categóricas, escalado de variables numéricas y el clasificador final.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Identificar columnas numéricas y categóricas</span>
+<span class="n">numerical_features</span> <span class="o">=</span> <span class="n">X_train</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="n">categorical_features</span> <span class="o">=</span> <span class="n">X_train</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Columnas Numéricas:&quot;</span><span class="p">,</span> <span class="n">numerical_features</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Columnas Categóricas:&quot;</span><span class="p">,</span> <span class="n">categorical_features</span><span class="p">)</span>
+
+<span class="c1"># Crear pipeline para transformaciones numéricas</span>
+<span class="n">numerical_transformer</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">[</span>
+    <span class="p">(</span><span class="s1">&#39;imputer&#39;</span><span class="p">,</span> <span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s1">&#39;median&#39;</span><span class="p">)),</span>  <span class="c1"># Imputar con la mediana</span>
+    <span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">StandardScaler</span><span class="p">())</span>                    <span class="c1"># Escalar características</span>
+<span class="p">])</span>
+
+<span class="c1"># Crear pipeline para transformaciones categóricas</span>
+<span class="n">categorical_transformer</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">[</span>
+    <span class="p">(</span><span class="s1">&#39;imputer&#39;</span><span class="p">,</span> <span class="n">SimpleImputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s1">&#39;most_frequent&#39;</span><span class="p">)),</span> <span class="c1"># Imputar con el valor más frecuente</span>
+    <span class="p">(</span><span class="s1">&#39;onehot&#39;</span><span class="p">,</span> <span class="n">OneHotEncoder</span><span class="p">(</span><span class="n">handle_unknown</span><span class="o">=</span><span class="s1">&#39;ignore&#39;</span><span class="p">))</span>     <span class="c1"># Codificación One-Hot</span>
+<span class="p">])</span>
+
+<span class="c1"># Combinar los transformadores en un único preprocesador</span>
+<span class="n">preprocessor</span> <span class="o">=</span> <span class="n">ColumnTransformer</span><span class="p">(</span>
+    <span class="n">transformers</span><span class="o">=</span><span class="p">[</span>
+        <span class="p">(</span><span class="s1">&#39;num&#39;</span><span class="p">,</span> <span class="n">numerical_transformer</span><span class="p">,</span> <span class="n">numerical_features</span><span class="p">),</span>
+        <span class="p">(</span><span class="s1">&#39;cat&#39;</span><span class="p">,</span> <span class="n">categorical_transformer</span><span class="p">,</span> <span class="n">categorical_features</span><span class="p">)</span>
+    <span class="p">],</span>
+    <span class="n">remainder</span><span class="o">=</span><span class="s1">&#39;passthrough&#39;</span> <span class="c1"># Mantiene columnas no especificadas (si las hubiera)</span>
+<span class="p">)</span>
+
+<span class="c1"># Crear el pipeline final que incluye el preprocesador y el clasificador</span>
+<span class="n">model_pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">(</span><span class="n">steps</span><span class="o">=</span><span class="p">[</span>
+    <span class="p">(</span><span class="s1">&#39;preprocessor&#39;</span><span class="p">,</span> <span class="n">preprocessor</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;classifier&#39;</span><span class="p">,</span> <span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">))</span>
+<span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Pipeline de Scikit-learn creado exitosamente.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Columnas Numéricas: [&#39;loan_amnt&#39;, &#39;int_rate&#39;, &#39;fico_range_high&#39;, &#39;emp_length&#39;, &#39;annual_inc&#39;, &#39;dti&#39;]
+Columnas Categóricas: [&#39;purpose&#39;, &#39;home_ownership&#39;, &#39;addr_state&#39;]
+
+Pipeline de Scikit-learn creado exitosamente.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="entrenamiento-y-ajuste-de-hiperparametros-con-gridsearchcv">
+<h3>5. Entrenamiento y Ajuste de Hiperparámetros con GridSearchCV<a class="headerlink" href="#entrenamiento-y-ajuste-de-hiperparametros-con-gridsearchcv" title="Link to this heading">#</a></h3>
+<p>Buscamos la mejor combinación de hiperparámetros para nuestro <code class="docutils literal notranslate"><span class="pre">RandomForestClassifier</span></code> y medimos el tiempo que toma este proceso.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Definir el grid de hiperparámetros a explorar</span>
+<span class="n">param_grid</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;classifier__n_estimators&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+    <span class="s1">&#39;classifier__max_depth&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">15</span><span class="p">]</span>
+<span class="p">}</span>
+
+<span class="c1"># Configurar GridSearchCV</span>
+<span class="c1"># Usamos 3-fold Cross-Validation y optimizamos para ROC AUC</span>
+<span class="n">grid_search</span> <span class="o">=</span> <span class="n">GridSearchCV</span><span class="p">(</span>
+    <span class="n">model_pipeline</span><span class="p">,</span> 
+    <span class="n">param_grid</span><span class="p">,</span> 
+    <span class="n">cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;roc_auc&#39;</span><span class="p">,</span> 
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span>
+<span class="p">)</span>
+
+<span class="c1"># Medir el tiempo de entrenamiento</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iniciando GridSearchCV para Scikit-learn...&quot;</span><span class="p">)</span>
+<span class="n">start_time_sklearn</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">grid_search</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">)</span>
+<span class="n">end_time_sklearn</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+<span class="n">sklearn_training_time</span> <span class="o">=</span> <span class="n">end_time_sklearn</span> <span class="o">-</span> <span class="n">start_time_sklearn</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">GridSearchCV completado en </span><span class="si">{</span><span class="n">sklearn_training_time</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> segundos.&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mejores hiperparámetros encontrados: </span><span class="si">{</span><span class="n">grid_search</span><span class="o">.</span><span class="n">best_params_</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Mejor puntuación ROC AUC (en validación cruzada): </span><span class="si">{</span><span class="n">grid_search</span><span class="o">.</span><span class="n">best_score_</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iniciando GridSearchCV para Scikit-learn...
+Fitting 3 folds for each of 9 candidates, totalling 27 fits
+[CV] END classifier__max_depth=5, classifier__n_estimators=10; total time=   4.5s
+[CV] END classifier__max_depth=5, classifier__n_estimators=10; total time=   4.4s
+[CV] END classifier__max_depth=5, classifier__n_estimators=10; total time=   4.1s
+[CV] END classifier__max_depth=5, classifier__n_estimators=50; total time=  13.3s
+[CV] END classifier__max_depth=5, classifier__n_estimators=50; total time=  14.2s
+[CV] END classifier__max_depth=5, classifier__n_estimators=50; total time=  14.7s
+[CV] END classifier__max_depth=5, classifier__n_estimators=100; total time=  26.2s
+[CV] END classifier__max_depth=5, classifier__n_estimators=100; total time=  22.5s
+[CV] END classifier__max_depth=5, classifier__n_estimators=100; total time=  21.4s
+[CV] END classifier__max_depth=10, classifier__n_estimators=10; total time=   8.1s
+[CV] END classifier__max_depth=10, classifier__n_estimators=10; total time=   7.6s
+[CV] END classifier__max_depth=10, classifier__n_estimators=10; total time=   7.7s
+[CV] END classifier__max_depth=10, classifier__n_estimators=50; total time=  30.0s
+[CV] END classifier__max_depth=10, classifier__n_estimators=50; total time=  34.0s
+[CV] END classifier__max_depth=10, classifier__n_estimators=50; total time=  32.1s
+[CV] END classifier__max_depth=10, classifier__n_estimators=100; total time= 1.0min
+[CV] END classifier__max_depth=10, classifier__n_estimators=100; total time=  56.1s
+[CV] END classifier__max_depth=10, classifier__n_estimators=100; total time=  53.0s
+[CV] END classifier__max_depth=15, classifier__n_estimators=10; total time=  17.4s
+[CV] END classifier__max_depth=15, classifier__n_estimators=10; total time=  16.0s
+[CV] END classifier__max_depth=15, classifier__n_estimators=10; total time=  16.4s
+[CV] END classifier__max_depth=15, classifier__n_estimators=50; total time= 1.2min
+[CV] END classifier__max_depth=15, classifier__n_estimators=50; total time= 1.2min
+[CV] END classifier__max_depth=15, classifier__n_estimators=50; total time= 1.5min
+[CV] END classifier__max_depth=15, classifier__n_estimators=100; total time= 2.7min
+[CV] END classifier__max_depth=15, classifier__n_estimators=100; total time= 3.2min
+[CV] END classifier__max_depth=15, classifier__n_estimators=100; total time= 3.2min
+
+GridSearchCV completado en 1547.44 segundos.
+Mejores hiperparámetros encontrados: {&#39;classifier__max_depth&#39;: 15, &#39;classifier__n_estimators&#39;: 100}
+Mejor puntuación ROC AUC (en validación cruzada): 0.7031
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="evaluacion-del-mejor-modelo">
+<h3>6. Evaluación del Mejor Modelo<a class="headerlink" href="#evaluacion-del-mejor-modelo" title="Link to this heading">#</a></h3>
+<p>Usamos el mejor modelo encontrado por <code class="docutils literal notranslate"><span class="pre">GridSearchCV</span></code> para hacer predicciones en el conjunto de prueba y calcular las métricas de rendimiento.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Obtener el mejor estimador (pipeline completo)</span>
+<span class="n">best_model_sklearn</span> <span class="o">=</span> <span class="n">grid_search</span><span class="o">.</span><span class="n">best_estimator_</span>
+
+<span class="c1"># Realizar predicciones en el conjunto de prueba</span>
+<span class="n">y_pred_sklearn</span> <span class="o">=</span> <span class="n">best_model_sklearn</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+<span class="n">y_proba_sklearn</span> <span class="o">=</span> <span class="n">best_model_sklearn</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)[:,</span> <span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># Calcular las métricas de evaluación</span>
+<span class="n">sklearn_metrics</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;Accuracy&#39;</span><span class="p">:</span> <span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred_sklearn</span><span class="p">),</span>
+    <span class="s1">&#39;Precision&#39;</span><span class="p">:</span> <span class="n">precision_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred_sklearn</span><span class="p">),</span>
+    <span class="s1">&#39;Recall&#39;</span><span class="p">:</span> <span class="n">recall_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred_sklearn</span><span class="p">),</span>
+    <span class="s1">&#39;F1-score&#39;</span><span class="p">:</span> <span class="n">f1_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred_sklearn</span><span class="p">),</span>
+    <span class="s1">&#39;ROC AUC&#39;</span><span class="p">:</span> <span class="n">roc_auc_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_proba_sklearn</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Métricas de Evaluación en el Conjunto de Prueba (Scikit-learn):&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">metric</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">sklearn_metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- </span><span class="si">{</span><span class="n">metric</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Métricas de Evaluación en el Conjunto de Prueba (Scikit-learn):
+- Accuracy: 0.8006
+- Precision: 0.6496
+- Recall: 0.0028
+- F1-score: 0.0056
+- ROC AUC: 0.7028
+</pre></div>
+</div>
+</div>
+</div>
+<section id="matriz-de-confusion">
+<h4>Matriz de Confusión<a class="headerlink" href="#matriz-de-confusion" title="Link to this heading">#</a></h4>
+<p>Visualizamos la matriz de confusión para entender mejor el tipo de errores que comete el modelo.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">cm</span> <span class="o">=</span> <span class="n">confusion_matrix</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred_sklearn</span><span class="p">)</span>
+<span class="n">disp</span> <span class="o">=</span> <span class="n">ConfusionMatrixDisplay</span><span class="p">(</span><span class="n">confusion_matrix</span><span class="o">=</span><span class="n">cm</span><span class="p">,</span> <span class="n">display_labels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Pagado (0)&#39;</span><span class="p">,</span> <span class="s1">&#39;Incumplimiento (1)&#39;</span><span class="p">])</span>
+<span class="n">disp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">cmap</span><span class="o">=</span><span class="n">plt</span><span class="o">.</span><span class="n">cm</span><span class="o">.</span><span class="n">Blues</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Matriz de Confusión - Scikit-learn&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="_images/f8c77d4f2a6e4009cde7b3363b5cb7760eb24afa19da58edce5ca34c7ee024fb.png" src="_images/f8c77d4f2a6e4009cde7b3363b5cb7760eb24afa19da58edce5ca34c7ee024fb.png" />
+</div>
+</div>
+</section>
+</section>
+<section id="guardado-de-artefactos-modelo-y-resultados">
+<h3>7. Guardado de Artefactos (Modelo y Resultados)<a class="headerlink" href="#guardado-de-artefactos-modelo-y-resultados" title="Link to this heading">#</a></h3>
+<p>Guardamos el pipeline del modelo entrenado y un archivo JSON con las métricas y el tiempo de entrenamiento para su uso en los notebooks de interpretabilidad y comparación.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Guardar el pipeline del modelo</span>
+<span class="n">joblib</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">best_model_sklearn</span><span class="p">,</span> <span class="n">MODEL_PATH</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Modelo de Scikit-learn guardado en: &#39;</span><span class="si">{</span><span class="n">MODEL_PATH</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+<span class="c1"># Crear un diccionario con todos los resultados</span>
+<span class="n">final_results</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;best_params&#39;</span><span class="p">:</span> <span class="n">grid_search</span><span class="o">.</span><span class="n">best_params_</span><span class="p">,</span>
+    <span class="s1">&#39;metrics&#39;</span><span class="p">:</span> <span class="n">sklearn_metrics</span><span class="p">,</span>
+    <span class="s1">&#39;training_time_seconds&#39;</span><span class="p">:</span> <span class="n">sklearn_training_time</span>
+<span class="p">}</span>
+
+<span class="c1"># Guardar los resultados en un archivo JSON</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">RESULTS_PATH</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">final_results</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resultados de Scikit-learn guardados en: &#39;</span><span class="si">{</span><span class="n">RESULTS_PATH</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Modelo de Scikit-learn guardado en: &#39;models/sklearn_random_forest.joblib&#39;
+Resultados de Scikit-learn guardados en: &#39;results/sklearn_metrics.json&#39;
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="fin-del-notebook-2">
+<h3>Fin del Notebook 2<a class="headerlink" href="#fin-del-notebook-2" title="Link to this heading">#</a></h3>
+</section>
+</section>
+<section id="hemos-entrenado-y-evaluado-con-exito-un-modelo-randomforest-utilizando-scikit-learn-los-artefactos-resultantes-estan-listos-para-el-siguiente-paso-que-sera-realizar-el-mismo-proceso-con-pyspark">
+<h2>Hemos entrenado y evaluado con éxito un modelo RandomForest utilizando Scikit-learn. Los artefactos resultantes están listos para el siguiente paso, que será realizar el mismo proceso con PySpark.<a class="headerlink" href="#hemos-entrenado-y-evaluado-con-exito-un-modelo-randomforest-utilizando-scikit-learn-los-artefactos-resultantes-estan-listos-para-el-siguiente-paso-que-sera-realizar-el-mismo-proceso-con-pyspark" title="Link to this heading">#</a></h2>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="eda.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">EDA y Preprocesamiento de Datos</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="pyspar.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Modelado con PySpark (Versión Optimizada)</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#objetivo">Objetivo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#importacion-de-librerias">1. Importación de Librerías</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definicion-de-rutas-y-carga-de-datos">2. Definición de Rutas y Carga de Datos</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#preparacion-de-datos-para-el-modelo">3. Preparación de Datos para el Modelo</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#construccion-del-pipeline-de-preprocesamiento-y-modelado">4. Construcción del Pipeline de Preprocesamiento y Modelado</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#entrenamiento-y-ajuste-de-hiperparametros-con-gridsearchcv">5. Entrenamiento y Ajuste de Hiperparámetros con GridSearchCV</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluacion-del-mejor-modelo">6. Evaluación del Mejor Modelo</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#matriz-de-confusion">Matriz de Confusión</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#guardado-de-artefactos-modelo-y-resultados">7. Guardado de Artefactos (Modelo y Resultados)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fin-del-notebook-2">Fin del Notebook 2</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hemos-entrenado-y-evaluado-con-exito-un-modelo-randomforest-utilizando-scikit-learn-los-artefactos-resultantes-estan-listos-para-el-siguiente-paso-que-sera-realizar-el-mismo-proceso-con-pyspark">Hemos entrenado y evaluado con éxito un modelo RandomForest utilizando Scikit-learn. Los artefactos resultantes están listos para el siguiente paso, que será realizar el mismo proceso con PySpark.</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By José Menco, Camilo Vargas, Iván Ramirez
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

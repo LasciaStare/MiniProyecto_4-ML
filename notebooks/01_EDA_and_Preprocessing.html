@@ -1,0 +1,1577 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>EDA y Preprocesamiento de Datos &#8212; Random Forest with PySpark</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'notebooks/01_EDA_and_Preprocessing';</script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Notebook 2: Modelado con Scikit-learn" href="02_Sklearn_Modeling.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="#">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="Random Forest with PySpark - Home"/>
+    <script>document.write(`<img src="../_static/logo.png" class="logo__image only-dark" alt="Random Forest with PySpark - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1 current active">
+                <a class="reference internal" href="#">
+                    EDA y Preprocesamiento de Datos
+                </a>
+            </li>
+        </ul>
+        <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="02_Sklearn_Modeling.html">Notebook 2: Modelado con Scikit-learn</a></li>
+<li class="toctree-l1"><a class="reference internal" href="03_PySpark_Modeling.html">Modelado con PySpark (Versión Optimizada)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="04_Interpretability_LIME.html">Interpretabilidad del Modelo con LIME</a></li>
+<li class="toctree-l1"><a class="reference internal" href="05_Comparison_and_Conclusion.html">Comparación de Resultados y Conclusiones</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/LasciaStare/MiniProyecto_4-ML" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/LasciaStare/MiniProyecto_4-ML/issues/new?title=Issue%20on%20page%20%2Fnotebooks/01_EDA_and_Preprocessing.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/notebooks/01_EDA_and_Preprocessing.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>EDA y Preprocesamiento de Datos</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#objetivo">Objetivo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#importacion-de-librerias-y-configuracion">1. Importación de Librerías y Configuración</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definicion-de-rutas-y-carga-de-datos">2. Definición de Rutas y Carga de Datos</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creacion-de-la-variable-objetivo-y-filtrado-inicial">3. Creación de la Variable Objetivo y Filtrado Inicial</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#analisis-exploratorio-de-datos-eda">4. Análisis Exploratorio de Datos (EDA)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#distribucion-de-la-variable-objetivo">4.1. Distribución de la Variable Objetivo</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seleccion-de-caracteristicas-y-analisis-de-nulos">4.2. Selección de Características y Análisis de Nulos</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#limpieza-de-caracteristicas">4.3. Limpieza de Características</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizaciones-de-caracteristicas">4.4. Visualizaciones de Características</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#analisis-de-correlacion">4.5. Análisis de Correlación</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#guardado-del-dataframe-procesado">5. Guardado del DataFrame Procesado</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="eda-y-preprocesamiento-de-datos">
+<h1>EDA y Preprocesamiento de Datos<a class="headerlink" href="#eda-y-preprocesamiento-de-datos" title="Link to this heading">#</a></h1>
+<section id="objetivo">
+<h2>Objetivo<a class="headerlink" href="#objetivo" title="Link to this heading">#</a></h2>
+<p>Este notebook es el primer paso en nuestro proyecto de clasificación de préstamos. Sus responsabilidades son:</p>
+<ol class="arabic simple">
+<li><p><strong>Cargar</strong> el conjunto de datos crudo de Lending Club.</p></li>
+<li><p>Realizar un <strong>Análisis Exploratorio de Datos (EDA)</strong> para entender las características, distribuciones y relaciones en los datos.</p></li>
+<li><p><strong>Limpiar y Preprocesar</strong> los datos, creando la variable objetivo y preparando un subconjunto de características para el modelado.</p></li>
+<li><p><strong>Guardar</strong> el DataFrame limpio en un formato eficiente (Parquet) para que pueda ser utilizado por los siguientes notebooks del pipeline.</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Entrada:</strong> <code class="docutils literal notranslate"><span class="pre">../data/raw/accepted.gz</span></code></p></li>
+<li><p><strong>Salida:</strong> <code class="docutils literal notranslate"><span class="pre">../data/processed/loans_cleaned.parquet</span></code></p></li>
+</ul>
+<section id="importacion-de-librerias-y-configuracion">
+<h3>1. Importación de Librerías y Configuración<a class="headerlink" href="#importacion-de-librerias-y-configuracion" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1"># Configuraciones de visualización</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">set_style</span><span class="p">(</span><span class="s1">&#39;whitegrid&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;figure.figsize&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">7</span><span class="p">)</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">max_columns</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">pd</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">display</span><span class="o">.</span><span class="n">float_format</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{:.2f}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="definicion-de-rutas-y-carga-de-datos">
+<h3>2. Definición de Rutas y Carga de Datos<a class="headerlink" href="#definicion-de-rutas-y-carga-de-datos" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Definir las rutas relativas</span>
+<span class="n">RAW_DATA_PATH</span> <span class="o">=</span> <span class="s1">&#39;../data/raw/accepted.gz&#39;</span>
+<span class="n">PROCESSED_DATA_PATH</span> <span class="o">=</span> <span class="s1">&#39;../data/processed/loans_cleaned.parquet&#39;</span>
+<span class="n">PROCESSED_DIR</span> <span class="o">=</span> <span class="s1">&#39;../data/processed&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Cargar el dataset</span>
+<span class="n">df_raw</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">RAW_DATA_PATH</span><span class="p">,</span> <span class="n">low_memory</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dataset cargado exitosamente.&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Dimensiones del dataset crudo: </span><span class="si">{</span><span class="n">df_raw</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> filas y </span><span class="si">{</span><span class="n">df_raw</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columnas.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Dataset cargado exitosamente.
+Dimensiones del dataset crudo: 2260701 filas y 151 columnas.
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_raw</span><span class="o">.</span><span class="n">head</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>id</th>
+      <th>member_id</th>
+      <th>loan_amnt</th>
+      <th>funded_amnt</th>
+      <th>funded_amnt_inv</th>
+      <th>term</th>
+      <th>int_rate</th>
+      <th>installment</th>
+      <th>grade</th>
+      <th>sub_grade</th>
+      <th>emp_title</th>
+      <th>emp_length</th>
+      <th>home_ownership</th>
+      <th>annual_inc</th>
+      <th>verification_status</th>
+      <th>issue_d</th>
+      <th>loan_status</th>
+      <th>pymnt_plan</th>
+      <th>url</th>
+      <th>desc</th>
+      <th>purpose</th>
+      <th>title</th>
+      <th>zip_code</th>
+      <th>addr_state</th>
+      <th>dti</th>
+      <th>delinq_2yrs</th>
+      <th>earliest_cr_line</th>
+      <th>fico_range_low</th>
+      <th>fico_range_high</th>
+      <th>inq_last_6mths</th>
+      <th>mths_since_last_delinq</th>
+      <th>mths_since_last_record</th>
+      <th>open_acc</th>
+      <th>pub_rec</th>
+      <th>revol_bal</th>
+      <th>revol_util</th>
+      <th>total_acc</th>
+      <th>initial_list_status</th>
+      <th>out_prncp</th>
+      <th>out_prncp_inv</th>
+      <th>total_pymnt</th>
+      <th>total_pymnt_inv</th>
+      <th>total_rec_prncp</th>
+      <th>total_rec_int</th>
+      <th>total_rec_late_fee</th>
+      <th>recoveries</th>
+      <th>collection_recovery_fee</th>
+      <th>last_pymnt_d</th>
+      <th>last_pymnt_amnt</th>
+      <th>next_pymnt_d</th>
+      <th>...</th>
+      <th>num_rev_tl_bal_gt_0</th>
+      <th>num_sats</th>
+      <th>num_tl_120dpd_2m</th>
+      <th>num_tl_30dpd</th>
+      <th>num_tl_90g_dpd_24m</th>
+      <th>num_tl_op_past_12m</th>
+      <th>pct_tl_nvr_dlq</th>
+      <th>percent_bc_gt_75</th>
+      <th>pub_rec_bankruptcies</th>
+      <th>tax_liens</th>
+      <th>tot_hi_cred_lim</th>
+      <th>total_bal_ex_mort</th>
+      <th>total_bc_limit</th>
+      <th>total_il_high_credit_limit</th>
+      <th>revol_bal_joint</th>
+      <th>sec_app_fico_range_low</th>
+      <th>sec_app_fico_range_high</th>
+      <th>sec_app_earliest_cr_line</th>
+      <th>sec_app_inq_last_6mths</th>
+      <th>sec_app_mort_acc</th>
+      <th>sec_app_open_acc</th>
+      <th>sec_app_revol_util</th>
+      <th>sec_app_open_act_il</th>
+      <th>sec_app_num_rev_accts</th>
+      <th>sec_app_chargeoff_within_12_mths</th>
+      <th>sec_app_collections_12_mths_ex_med</th>
+      <th>sec_app_mths_since_last_major_derog</th>
+      <th>hardship_flag</th>
+      <th>hardship_type</th>
+      <th>hardship_reason</th>
+      <th>hardship_status</th>
+      <th>deferral_term</th>
+      <th>hardship_amount</th>
+      <th>hardship_start_date</th>
+      <th>hardship_end_date</th>
+      <th>payment_plan_start_date</th>
+      <th>hardship_length</th>
+      <th>hardship_dpd</th>
+      <th>hardship_loan_status</th>
+      <th>orig_projected_additional_accrued_interest</th>
+      <th>hardship_payoff_balance_amount</th>
+      <th>hardship_last_payment_amount</th>
+      <th>disbursement_method</th>
+      <th>debt_settlement_flag</th>
+      <th>debt_settlement_flag_date</th>
+      <th>settlement_status</th>
+      <th>settlement_date</th>
+      <th>settlement_amount</th>
+      <th>settlement_percentage</th>
+      <th>settlement_term</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>68407277</td>
+      <td>NaN</td>
+      <td>3600.00</td>
+      <td>3600.00</td>
+      <td>3600.00</td>
+      <td>36 months</td>
+      <td>13.99</td>
+      <td>123.03</td>
+      <td>C</td>
+      <td>C4</td>
+      <td>leadman</td>
+      <td>10+ years</td>
+      <td>MORTGAGE</td>
+      <td>55000.00</td>
+      <td>Not Verified</td>
+      <td>Dec-2015</td>
+      <td>Fully Paid</td>
+      <td>n</td>
+      <td>https://lendingclub.com/browse/loanDetail.acti...</td>
+      <td>NaN</td>
+      <td>debt_consolidation</td>
+      <td>Debt consolidation</td>
+      <td>190xx</td>
+      <td>PA</td>
+      <td>5.91</td>
+      <td>0.00</td>
+      <td>Aug-2003</td>
+      <td>675.00</td>
+      <td>679.00</td>
+      <td>1.00</td>
+      <td>30.00</td>
+      <td>NaN</td>
+      <td>7.00</td>
+      <td>0.00</td>
+      <td>2765.00</td>
+      <td>29.70</td>
+      <td>13.00</td>
+      <td>w</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>4421.72</td>
+      <td>4421.72</td>
+      <td>3600.00</td>
+      <td>821.72</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>Jan-2019</td>
+      <td>122.67</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>4.00</td>
+      <td>7.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>3.00</td>
+      <td>76.90</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>178050.00</td>
+      <td>7746.00</td>
+      <td>2400.00</td>
+      <td>13734.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cash</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>68355089</td>
+      <td>NaN</td>
+      <td>24700.00</td>
+      <td>24700.00</td>
+      <td>24700.00</td>
+      <td>36 months</td>
+      <td>11.99</td>
+      <td>820.28</td>
+      <td>C</td>
+      <td>C1</td>
+      <td>Engineer</td>
+      <td>10+ years</td>
+      <td>MORTGAGE</td>
+      <td>65000.00</td>
+      <td>Not Verified</td>
+      <td>Dec-2015</td>
+      <td>Fully Paid</td>
+      <td>n</td>
+      <td>https://lendingclub.com/browse/loanDetail.acti...</td>
+      <td>NaN</td>
+      <td>small_business</td>
+      <td>Business</td>
+      <td>577xx</td>
+      <td>SD</td>
+      <td>16.06</td>
+      <td>1.00</td>
+      <td>Dec-1999</td>
+      <td>715.00</td>
+      <td>719.00</td>
+      <td>4.00</td>
+      <td>6.00</td>
+      <td>NaN</td>
+      <td>22.00</td>
+      <td>0.00</td>
+      <td>21470.00</td>
+      <td>19.20</td>
+      <td>38.00</td>
+      <td>w</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>25679.66</td>
+      <td>25679.66</td>
+      <td>24700.00</td>
+      <td>979.66</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>Jun-2016</td>
+      <td>926.35</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>5.00</td>
+      <td>22.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>2.00</td>
+      <td>97.40</td>
+      <td>7.70</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>314017.00</td>
+      <td>39475.00</td>
+      <td>79300.00</td>
+      <td>24667.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cash</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>68341763</td>
+      <td>NaN</td>
+      <td>20000.00</td>
+      <td>20000.00</td>
+      <td>20000.00</td>
+      <td>60 months</td>
+      <td>10.78</td>
+      <td>432.66</td>
+      <td>B</td>
+      <td>B4</td>
+      <td>truck driver</td>
+      <td>10+ years</td>
+      <td>MORTGAGE</td>
+      <td>63000.00</td>
+      <td>Not Verified</td>
+      <td>Dec-2015</td>
+      <td>Fully Paid</td>
+      <td>n</td>
+      <td>https://lendingclub.com/browse/loanDetail.acti...</td>
+      <td>NaN</td>
+      <td>home_improvement</td>
+      <td>NaN</td>
+      <td>605xx</td>
+      <td>IL</td>
+      <td>10.78</td>
+      <td>0.00</td>
+      <td>Aug-2000</td>
+      <td>695.00</td>
+      <td>699.00</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>6.00</td>
+      <td>0.00</td>
+      <td>7869.00</td>
+      <td>56.20</td>
+      <td>18.00</td>
+      <td>w</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>22705.92</td>
+      <td>22705.92</td>
+      <td>20000.00</td>
+      <td>2705.92</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>Jun-2017</td>
+      <td>15813.30</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>3.00</td>
+      <td>6.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>100.00</td>
+      <td>50.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>218418.00</td>
+      <td>18696.00</td>
+      <td>6200.00</td>
+      <td>14877.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cash</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>66310712</td>
+      <td>NaN</td>
+      <td>35000.00</td>
+      <td>35000.00</td>
+      <td>35000.00</td>
+      <td>60 months</td>
+      <td>14.85</td>
+      <td>829.90</td>
+      <td>C</td>
+      <td>C5</td>
+      <td>Information Systems Officer</td>
+      <td>10+ years</td>
+      <td>MORTGAGE</td>
+      <td>110000.00</td>
+      <td>Source Verified</td>
+      <td>Dec-2015</td>
+      <td>Current</td>
+      <td>n</td>
+      <td>https://lendingclub.com/browse/loanDetail.acti...</td>
+      <td>NaN</td>
+      <td>debt_consolidation</td>
+      <td>Debt consolidation</td>
+      <td>076xx</td>
+      <td>NJ</td>
+      <td>17.06</td>
+      <td>0.00</td>
+      <td>Sep-2008</td>
+      <td>785.00</td>
+      <td>789.00</td>
+      <td>0.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>13.00</td>
+      <td>0.00</td>
+      <td>7802.00</td>
+      <td>11.60</td>
+      <td>17.00</td>
+      <td>w</td>
+      <td>15897.65</td>
+      <td>15897.65</td>
+      <td>31464.01</td>
+      <td>31464.01</td>
+      <td>19102.35</td>
+      <td>12361.66</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>Feb-2019</td>
+      <td>829.90</td>
+      <td>Apr-2019</td>
+      <td>...</td>
+      <td>5.00</td>
+      <td>13.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>1.00</td>
+      <td>100.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>381215.00</td>
+      <td>52226.00</td>
+      <td>62500.00</td>
+      <td>18000.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cash</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>68476807</td>
+      <td>NaN</td>
+      <td>10400.00</td>
+      <td>10400.00</td>
+      <td>10400.00</td>
+      <td>60 months</td>
+      <td>22.45</td>
+      <td>289.91</td>
+      <td>F</td>
+      <td>F1</td>
+      <td>Contract Specialist</td>
+      <td>3 years</td>
+      <td>MORTGAGE</td>
+      <td>104433.00</td>
+      <td>Source Verified</td>
+      <td>Dec-2015</td>
+      <td>Fully Paid</td>
+      <td>n</td>
+      <td>https://lendingclub.com/browse/loanDetail.acti...</td>
+      <td>NaN</td>
+      <td>major_purchase</td>
+      <td>Major purchase</td>
+      <td>174xx</td>
+      <td>PA</td>
+      <td>25.37</td>
+      <td>1.00</td>
+      <td>Jun-1998</td>
+      <td>695.00</td>
+      <td>699.00</td>
+      <td>3.00</td>
+      <td>12.00</td>
+      <td>NaN</td>
+      <td>12.00</td>
+      <td>0.00</td>
+      <td>21929.00</td>
+      <td>64.50</td>
+      <td>35.00</td>
+      <td>w</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>11740.50</td>
+      <td>11740.50</td>
+      <td>10400.00</td>
+      <td>1340.50</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>Jul-2016</td>
+      <td>10128.96</td>
+      <td>NaN</td>
+      <td>...</td>
+      <td>6.00</td>
+      <td>12.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>4.00</td>
+      <td>96.60</td>
+      <td>60.00</td>
+      <td>0.00</td>
+      <td>0.00</td>
+      <td>439570.00</td>
+      <td>95768.00</td>
+      <td>20300.00</td>
+      <td>88097.00</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>Cash</td>
+      <td>N</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>NaN</td>
+    </tr>
+  </tbody>
+</table>
+<p>5 rows × 151 columns</p>
+</div></div></div>
+</div>
+</section>
+<section id="creacion-de-la-variable-objetivo-y-filtrado-inicial">
+<h3>3. Creación de la Variable Objetivo y Filtrado Inicial<a class="headerlink" href="#creacion-de-la-variable-objetivo-y-filtrado-inicial" title="Link to this heading">#</a></h3>
+<p>De acuerdo con los requisitos del proyecto, nos enfocaremos únicamente en los préstamos que han sido completamente pagados (<code class="docutils literal notranslate"><span class="pre">Fully</span> <span class="pre">Paid</span></code>) o que han entrado en incumplimiento (<code class="docutils literal notranslate"><span class="pre">Charged</span> <span class="pre">Off</span></code>). Crearemos nuestra variable objetivo binaria <code class="docutils literal notranslate"><span class="pre">default</span></code> a partir de esta información.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Ver los posibles valores de &#39;loan_status&#39;</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Valores en &#39;loan_status&#39;:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">df_raw</span><span class="p">[</span><span class="s1">&#39;loan_status&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">())</span>
+
+<span class="c1"># Filtrar para mantener solo los estados finales relevantes</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">df_raw</span><span class="p">[</span><span class="n">df_raw</span><span class="p">[</span><span class="s1">&#39;loan_status&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">([</span><span class="s1">&#39;Fully Paid&#39;</span><span class="p">,</span> <span class="s1">&#39;Charged Off&#39;</span><span class="p">])]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="c1"># Crear la variable objetivo &#39;default&#39;</span>
+<span class="c1"># 1 si es &#39;Charged Off&#39; (incumplimiento), 0 si es &#39;Fully Paid&#39;</span>
+<span class="n">df</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;loan_status&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;Charged Off&#39;</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Dimensiones del dataset después de filtrar: </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2"> filas y </span><span class="si">{</span><span class="n">df</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> columnas.&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Mapeo de &#39;loan_status&#39; a &#39;default&#39;:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[[</span><span class="s1">&#39;loan_status&#39;</span><span class="p">,</span> <span class="s1">&#39;default&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Valores en &#39;loan_status&#39;:
+loan_status
+Fully Paid                                             1076751
+Current                                                 878317
+Charged Off                                             268559
+Late (31-120 days)                                       21467
+In Grace Period                                           8436
+Late (16-30 days)                                         4349
+Does not meet the credit policy. Status:Fully Paid        1988
+Does not meet the credit policy. Status:Charged Off        761
+Default                                                     40
+Name: count, dtype: int64
+
+Dimensiones del dataset después de filtrar: 1345310 filas y 152 columnas.
+
+Mapeo de &#39;loan_status&#39; a &#39;default&#39;:
+  loan_status  default
+0  Fully Paid        0
+1  Fully Paid        0
+2  Fully Paid        0
+4  Fully Paid        0
+5  Fully Paid        0
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="analisis-exploratorio-de-datos-eda">
+<h3>4. Análisis Exploratorio de Datos (EDA)<a class="headerlink" href="#analisis-exploratorio-de-datos-eda" title="Link to this heading">#</a></h3>
+<section id="distribucion-de-la-variable-objetivo">
+<h4>4.1. Distribución de la Variable Objetivo<a class="headerlink" href="#distribucion-de-la-variable-objetivo" title="Link to this heading">#</a></h4>
+<p>Es crucial analizar el balance de clases. Un desbalance significativo puede requerir técnicas especiales durante el modelado.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">sns</span><span class="o">.</span><span class="n">countplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Distribución de la Variable Objetivo (Default)&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Estado del Préstamo&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Cantidad de Préstamos&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;Pagado (0)&#39;</span><span class="p">,</span> <span class="s1">&#39;Incumplimiento (1)&#39;</span><span class="p">])</span>
+
+<span class="c1"># Añadir porcentajes en las barras</span>
+<span class="n">total</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">ax</span><span class="o">.</span><span class="n">patches</span><span class="p">:</span>
+    <span class="n">percentage</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="mi">100</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">p</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">total</span><span class="si">:</span><span class="s1">.1f</span><span class="si">}</span><span class="s1">%&#39;</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_x</span><span class="p">()</span> <span class="o">+</span> <span class="n">p</span><span class="o">.</span><span class="n">get_width</span><span class="p">()</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_height</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">annotate</span><span class="p">(</span><span class="n">percentage</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;center&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Balance de clases:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/5c94da627d43b39a6b8772012c48ea9354760ce9e1dd729ff02e7555cbcf8ad1.png" src="../_images/5c94da627d43b39a6b8772012c48ea9354760ce9e1dd729ff02e7555cbcf8ad1.png" />
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Balance de clases:
+default
+0   0.80
+1   0.20
+Name: proportion, dtype: float64
+</pre></div>
+</div>
+</div>
+</div>
+<p>Observamos un desbalance de clases, con aproximadamente un 80% de préstamos pagados y un 20% en incumplimiento. Esto es típico en problemas de riesgo crediticio.</p>
+</section>
+<section id="seleccion-de-caracteristicas-y-analisis-de-nulos">
+<h4>4.2. Selección de Características y Análisis de Nulos<a class="headerlink" href="#seleccion-de-caracteristicas-y-analisis-de-nulos" title="Link to this heading">#</a></h4>
+<p>Seleccionamos el subconjunto de características especificadas en el proyecto para el análisis y modelado.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">selected_features</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s1">&#39;loan_amnt&#39;</span><span class="p">,</span>       <span class="c1"># Monto del préstamo</span>
+    <span class="s1">&#39;int_rate&#39;</span><span class="p">,</span>        <span class="c1"># Tasa de interés</span>
+    <span class="s1">&#39;fico_range_high&#39;</span><span class="p">,</span> <span class="c1"># Puntuación FICO (límite superior)</span>
+    <span class="s1">&#39;emp_length&#39;</span><span class="p">,</span>      <span class="c1"># Antigüedad laboral</span>
+    <span class="s1">&#39;annual_inc&#39;</span><span class="p">,</span>      <span class="c1"># Ingreso anual</span>
+    <span class="s1">&#39;purpose&#39;</span><span class="p">,</span>         <span class="c1"># Propósito del préstamo</span>
+    <span class="s1">&#39;home_ownership&#39;</span><span class="p">,</span>  <span class="c1"># Situación de la vivienda</span>
+    <span class="s1">&#39;dti&#39;</span><span class="p">,</span>             <span class="c1"># Ratio deuda-ingreso</span>
+    <span class="s1">&#39;addr_state&#39;</span><span class="p">,</span>      <span class="c1"># Estado de residencia</span>
+    <span class="s1">&#39;default&#39;</span>          <span class="c1"># Nuestra variable objetivo</span>
+<span class="p">]</span>
+
+<span class="n">df_subset</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">selected_features</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Información del subset de datos:&quot;</span><span class="p">)</span>
+<span class="n">df_subset</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Porcentaje de valores faltantes por columna:&quot;</span><span class="p">)</span>
+<span class="n">missing_percentage</span> <span class="o">=</span> <span class="p">(</span><span class="n">df_subset</span><span class="o">.</span><span class="n">isnull</span><span class="p">()</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">df_subset</span><span class="p">)</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">ascending</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">missing_percentage</span><span class="p">[</span><span class="n">missing_percentage</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Información del subset de datos:
+&lt;class &#39;pandas.core.frame.DataFrame&#39;&gt;
+Index: 1345310 entries, 0 to 2260697
+Data columns (total 10 columns):
+ #   Column           Non-Null Count    Dtype  
+---  ------           --------------    -----  
+ 0   loan_amnt        1345310 non-null  float64
+ 1   int_rate         1345310 non-null  float64
+ 2   fico_range_high  1345310 non-null  float64
+ 3   emp_length       1266799 non-null  object 
+ 4   annual_inc       1345310 non-null  float64
+ 5   purpose          1345310 non-null  object 
+ 6   home_ownership   1345310 non-null  object 
+ 7   dti              1344936 non-null  float64
+ 8   addr_state       1345310 non-null  object 
+ 9   default          1345310 non-null  int64  
+dtypes: float64(5), int64(1), object(4)
+memory usage: 112.9+ MB
+
+Porcentaje de valores faltantes por columna:
+emp_length   5.84
+dti          0.03
+dtype: float64
+</pre></div>
+</div>
+</div>
+</div>
+<p>Las columnas <code class="docutils literal notranslate"><span class="pre">emp_length</span></code> y <code class="docutils literal notranslate"><span class="pre">dti</span></code> tienen valores faltantes. Estos deberán ser manejados (imputados) antes del modelado.</p>
+</section>
+<section id="limpieza-de-caracteristicas">
+<h4>4.3. Limpieza de Características<a class="headerlink" href="#limpieza-de-caracteristicas" title="Link to this heading">#</a></h4>
+<p>La columna <code class="docutils literal notranslate"><span class="pre">emp_length</span></code> es categórica y necesita ser convertida a un formato numérico.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">clean_emp_length</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">pd</span><span class="o">.</span><span class="n">isna</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">or</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;n/a&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="c1"># Mantenemos el NaN para imputarlo después</span>
+    <span class="k">elif</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;&lt; 1 year&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="k">elif</span> <span class="n">x</span> <span class="o">==</span> <span class="s1">&#39;10+ years&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="mi">10</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Extrae el número usando una expresión regular</span>
+        <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;\d+&#39;</span><span class="p">,</span> <span class="n">x</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Valores originales de &#39;emp_length&#39;:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">df_subset</span><span class="p">[</span><span class="s1">&#39;emp_length&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">dropna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">())</span>
+
+<span class="n">df_subset</span><span class="p">[</span><span class="s1">&#39;emp_length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_subset</span><span class="p">[</span><span class="s1">&#39;emp_length&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">clean_emp_length</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Valores de &#39;emp_length&#39; después de la limpieza:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">df_subset</span><span class="p">[</span><span class="s1">&#39;emp_length&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">value_counts</span><span class="p">(</span><span class="n">dropna</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span><span class="o">.</span><span class="n">sort_index</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Valores originales de &#39;emp_length&#39;:
+emp_length
+1 year        88494
+10+ years    442199
+2 years      121743
+3 years      107597
+4 years       80556
+5 years       84154
+6 years       62733
+7 years       59624
+8 years       60701
+9 years       50937
+&lt; 1 year     108061
+NaN           78511
+Name: count, dtype: int64
+
+Valores de &#39;emp_length&#39; después de la limpieza:
+emp_length
+0.00     108061
+1.00      88494
+2.00     121743
+3.00     107597
+4.00      80556
+5.00      84154
+6.00      62733
+7.00      59624
+8.00      60701
+9.00      50937
+10.00    442199
+NaN       78511
+Name: count, dtype: int64
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="visualizaciones-de-caracteristicas">
+<h4>4.4. Visualizaciones de Características<a class="headerlink" href="#visualizaciones-de-caracteristicas" title="Link to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">numerical_cols</span> <span class="o">=</span> <span class="n">df_subset</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">drop</span><span class="p">(</span><span class="s1">&#39;default&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="n">categorical_cols</span> <span class="o">=</span> <span class="n">df_subset</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">exclude</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">number</span><span class="p">)</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+
+<span class="c1"># Histogramas de variables numéricas</span>
+<span class="n">df_subset</span><span class="p">[</span><span class="n">numerical_cols</span><span class="p">]</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">bins</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">layout</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="s1">&#39;Distribución de Variables Numéricas&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">20</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">rect</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.03</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/9c799ab4a3b679a51ec9dac4c996e150347bee88e0747cc17d5a8cdcac2ae395.png" src="../_images/9c799ab4a3b679a51ec9dac4c996e150347bee88e0747cc17d5a8cdcac2ae395.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Boxplots de variables numéricas por clase de &#39;default&#39;</span>
+<span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">numerical_cols</span><span class="p">:</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+    <span class="n">sns</span><span class="o">.</span><span class="n">boxplot</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="s1">&#39;default&#39;</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="n">col</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">df_subset</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Distribución de </span><span class="si">{</span><span class="n">col</span><span class="si">}</span><span class="s1"> por Estado del Préstamo&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xticks</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;Pagado (0)&#39;</span><span class="p">,</span> <span class="s1">&#39;Incumplimiento (1)&#39;</span><span class="p">])</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Estado del Préstamo&#39;</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">col</span><span class="p">)</span>
+    <span class="c1"># Limitar outliers en &#39;annual_inc&#39; para una mejor visualización</span>
+    <span class="k">if</span> <span class="n">col</span> <span class="o">==</span> <span class="s1">&#39;annual_inc&#39;</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">300000</span><span class="p">)</span> 
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/4037ca4a5b66e4f80960d2b3c6b9097390ba9ffa9304854662a1fef3d99d78b1.png" src="../_images/4037ca4a5b66e4f80960d2b3c6b9097390ba9ffa9304854662a1fef3d99d78b1.png" />
+<img alt="../_images/5539c31d703b41991fb1513c9b74f8f1d1d869659ca9676db2d3b9919a5989f7.png" src="../_images/5539c31d703b41991fb1513c9b74f8f1d1d869659ca9676db2d3b9919a5989f7.png" />
+<img alt="../_images/c6ad8cce5c568d8f14df62b05f18c6e3f7bf264048ad52b66d00c3b7ae3de8dc.png" src="../_images/c6ad8cce5c568d8f14df62b05f18c6e3f7bf264048ad52b66d00c3b7ae3de8dc.png" />
+<img alt="../_images/08c97d6b45a1c6632feb23b444936da289f0555041235e9a37e6d380bf52bea9.png" src="../_images/08c97d6b45a1c6632feb23b444936da289f0555041235e9a37e6d380bf52bea9.png" />
+<img alt="../_images/3bdea3bbc811bd1163d9d2c5f901cbe1d4cc1eed6ee6aa356a497b474b1783d5.png" src="../_images/3bdea3bbc811bd1163d9d2c5f901cbe1d4cc1eed6ee6aa356a497b474b1783d5.png" />
+<img alt="../_images/2f5ae7d007109fa1b1cb37f75362b78f6bf0f97fb275c96d26806b48bd15a2f7.png" src="../_images/2f5ae7d007109fa1b1cb37f75362b78f6bf0f97fb275c96d26806b48bd15a2f7.png" />
+</div>
+</div>
+</section>
+<section id="analisis-de-correlacion">
+<h4>4.5. Análisis de Correlación<a class="headerlink" href="#analisis-de-correlacion" title="Link to this heading">#</a></h4>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+<span class="n">corr</span> <span class="o">=</span> <span class="n">df_subset</span><span class="p">[</span><span class="n">numerical_cols</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">]]</span><span class="o">.</span><span class="n">corr</span><span class="p">()</span>
+<span class="n">sns</span><span class="o">.</span><span class="n">heatmap</span><span class="p">(</span><span class="n">corr</span><span class="p">,</span> <span class="n">annot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;coolwarm&#39;</span><span class="p">,</span> <span class="n">fmt</span><span class="o">=</span><span class="s2">&quot;.2f&quot;</span><span class="p">,</span> <span class="n">linewidths</span><span class="o">=</span><span class="mf">.5</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s1">&#39;Mapa de Calor de Correlaciones&#39;</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/9be17ef365342ce3ded459d5c3a9da75a5b00f160f859338bf711bd8d14ca719.png" src="../_images/9be17ef365342ce3ded459d5c3a9da75a5b00f160f859338bf711bd8d14ca719.png" />
+</div>
+</div>
+<p><strong>Observaciones de la Correlación:</strong></p>
+<ul class="simple">
+<li><p>La correlación más fuerte con <code class="docutils literal notranslate"><span class="pre">default</span></code> es <code class="docutils literal notranslate"><span class="pre">int_rate</span></code> (positiva, 0.26) y <code class="docutils literal notranslate"><span class="pre">fico_range_high</span></code> (negativa, -0.13), lo cual confirma nuestras observaciones de los boxplots.</p></li>
+</ul>
+</section>
+</section>
+<section id="guardado-del-dataframe-procesado">
+<h3>5. Guardado del DataFrame Procesado<a class="headerlink" href="#guardado-del-dataframe-procesado" title="Link to this heading">#</a></h3>
+<p>Finalmente, guardamos el <code class="docutils literal notranslate"><span class="pre">df_subset</span></code> limpio y preprocesado en formato Parquet. Este archivo será la entrada para los notebooks de modelado.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">df_subset</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="n">PROCESSED_DATA_PATH</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;DataFrame procesado guardado exitosamente en:</span><span class="se">\n</span><span class="si">{</span><span class="n">PROCESSED_DATA_PATH</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Dimensiones finales del DataFrame guardado: </span><span class="si">{</span><span class="n">df_subset</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Primeras 5 filas del DataFrame final:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">df_subset</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>DataFrame procesado guardado exitosamente en:
+data/processed/loans_cleaned.parquet
+
+Dimensiones finales del DataFrame guardado: (1345310, 10)
+
+Primeras 5 filas del DataFrame final:
+   loan_amnt  int_rate  fico_range_high  emp_length  annual_inc  \
+0    3600.00     13.99           679.00       10.00    55000.00   
+1   24700.00     11.99           719.00       10.00    65000.00   
+2   20000.00     10.78           699.00       10.00    63000.00   
+4   10400.00     22.45           699.00        3.00   104433.00   
+5   11950.00     13.44           694.00        4.00    34000.00   
+
+              purpose home_ownership   dti addr_state  default  
+0  debt_consolidation       MORTGAGE  5.91         PA        0  
+1      small_business       MORTGAGE 16.06         SD        0  
+2    home_improvement       MORTGAGE 10.78         IL        0  
+4      major_purchase       MORTGAGE 25.37         PA        0  
+5  debt_consolidation           RENT 10.20         GA        0  
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+</section>
+<div class="toctree-wrapper compound">
+</div>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./notebooks"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="right-next"
+       href="02_Sklearn_Modeling.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Notebook 2: Modelado con Scikit-learn</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#objetivo">Objetivo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#importacion-de-librerias-y-configuracion">1. Importación de Librerías y Configuración</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definicion-de-rutas-y-carga-de-datos">2. Definición de Rutas y Carga de Datos</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#creacion-de-la-variable-objetivo-y-filtrado-inicial">3. Creación de la Variable Objetivo y Filtrado Inicial</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#analisis-exploratorio-de-datos-eda">4. Análisis Exploratorio de Datos (EDA)</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#distribucion-de-la-variable-objetivo">4.1. Distribución de la Variable Objetivo</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#seleccion-de-caracteristicas-y-analisis-de-nulos">4.2. Selección de Características y Análisis de Nulos</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#limpieza-de-caracteristicas">4.3. Limpieza de Características</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#visualizaciones-de-caracteristicas">4.4. Visualizaciones de Características</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#analisis-de-correlacion">4.5. Análisis de Correlación</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#guardado-del-dataframe-procesado">5. Guardado del DataFrame Procesado</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By José Menco, Camilo Vargas, Iván Ramirez
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>

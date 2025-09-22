@@ -1,0 +1,837 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Modelado con PySpark (Versión Optimizada) &#8212; Random Forest with PySpark</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-design.min.css?v=95c83b7e" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=f930bc37"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'pyspar';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Interpretabilidad del Modelo con LIME" href="lime.html" />
+    <link rel="prev" title="Notebook 2: Modelado con Scikit-learn" href="model.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="eda.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="Random Forest with PySpark - Home"/>
+    <script>document.write(`<img src="_static/logo.png" class="logo__image only-dark" alt="Random Forest with PySpark - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="eda.html">
+                    EDA y Preprocesamiento de Datos
+                </a>
+            </li>
+        </ul>
+        <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="model.html">Notebook 2: Modelado con Scikit-learn</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Modelado con PySpark (Versión Optimizada)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="lime.html">Interpretabilidad del Modelo con LIME</a></li>
+<li class="toctree-l1"><a class="reference internal" href="compara.html">Comparación de Resultados y Conclusiones</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/LasciaStare/MiniProyecto_4-ML" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/LasciaStare/MiniProyecto_4-ML/issues/new?title=Issue%20on%20page%20%2Fpyspar.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/pyspar.ipynb" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.ipynb</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Modelado con PySpark (Versión Optimizada)</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#objetivo">Objetivo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#importacion-de-librerias-e-inicio-de-sparksession">1. Importación de Librerías e Inicio de SparkSession</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definicion-de-rutas-y-carga-de-datos">2. Definición de Rutas y Carga de Datos</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#preparacion-de-datos-division-reparticion-y-cache">3. Preparación de Datos: División, Repartición y Cache</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#construccion-del-pipeline-de-pyspark-ml">4. Construcción del Pipeline de PySpark ML</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#entrenamiento-y-ajuste-de-hiperparametros-con-trainvalidationsplit">5. Entrenamiento y Ajuste de Hiperparámetros con TrainValidationSplit</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluacion-y-guardado-del-modelo">6. Evaluación y Guardado del Modelo</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#detener-la-sesion-de-spark">7. Detener la Sesión de Spark</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fin-del-notebook-3">Fin del Notebook 3</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hemos-implementado-un-pipeline-de-modelado-optimizado-con-pyspark-listo-para-ser-comparado-con-el-enfoque-de-scikit-learn">Hemos implementado un pipeline de modelado optimizado con PySpark, listo para ser comparado con el enfoque de Scikit-learn.</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section class="tex2jax_ignore mathjax_ignore" id="modelado-con-pyspark-version-optimizada">
+<h1>Modelado con PySpark (Versión Optimizada)<a class="headerlink" href="#modelado-con-pyspark-version-optimizada" title="Link to this heading">#</a></h1>
+<section id="objetivo">
+<h2>Objetivo<a class="headerlink" href="#objetivo" title="Link to this heading">#</a></h2>
+<p>Este notebook implementa el pipeline de machine learning para la clasificación de préstamos utilizando PySpark. Esta versión se centra en optimizar el rendimiento y la eficiencia en un entorno local.</p>
+<ol class="arabic simple">
+<li><p><strong>Iniciar una SparkSession</strong> optimizada para el uso de todos los recursos locales.</p></li>
+<li><p><strong>Cargar</strong> el conjunto de datos y aplicar técnicas de <strong>cache y repartitioning</strong>.</p></li>
+<li><p><strong>Construir un <code class="docutils literal notranslate"><span class="pre">Pipeline</span></code> de PySpark</strong> para la transformación de características.</p></li>
+<li><p><strong>Entrenar un <code class="docutils literal notranslate"><span class="pre">RandomForestClassifier</span></code></strong> y optimizar sus hiperparámetros usando <code class="docutils literal notranslate"><span class="pre">TrainValidationSplit</span></code> para mayor velocidad.</p></li>
+<li><p><strong>Evaluar</strong> el rendimiento del modelo en el conjunto de prueba.</p></li>
+<li><p><strong>Guardar</strong> el modelo entrenado y sus métricas.</p></li>
+</ol>
+<ul class="simple">
+<li><p><strong>Entrada:</strong> <code class="docutils literal notranslate"><span class="pre">data/processed/loans_cleaned.parquet</span></code></p></li>
+<li><p><strong>Salidas:</strong></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">models/pyspark_random_forest/</span></code> (Carpeta con el modelo de Spark)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">results/pyspark_metrics.json</span></code> (Métricas de evaluación y tiempo de entrenamiento)</p></li>
+</ul>
+</li>
+</ul>
+<section id="importacion-de-librerias-e-inicio-de-sparksession">
+<h3>1. Importación de Librerías e Inicio de SparkSession<a class="headerlink" href="#importacion-de-librerias-e-inicio-de-sparksession" title="Link to this heading">#</a></h3>
+<p>Iniciamos una <code class="docutils literal notranslate"><span class="pre">SparkSession</span></code> con configuraciones específicas para mejorar el rendimiento en una máquina local.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;HADOOP_HOME&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;C:</span><span class="se">\\</span><span class="s1">hadoop&#39;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="s1">&#39;;C:</span><span class="se">\\</span><span class="s1">hadoop</span><span class="se">\\</span><span class="s1">bin&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">SparkSession</span><span class="p">,</span> <span class="n">types</span> <span class="k">as</span> <span class="n">T</span>
+<span class="kn">from</span> <span class="nn">pyspark.ml</span> <span class="kn">import</span> <span class="n">Pipeline</span> <span class="k">as</span> <span class="n">SparkPipeline</span>
+<span class="kn">from</span> <span class="nn">pyspark.ml.feature</span> <span class="kn">import</span> <span class="n">StringIndexer</span><span class="p">,</span> <span class="n">OneHotEncoder</span><span class="p">,</span> <span class="n">VectorAssembler</span><span class="p">,</span> <span class="n">Imputer</span>
+<span class="kn">from</span> <span class="nn">pyspark.ml.classification</span> <span class="kn">import</span> <span class="n">RandomForestClassifier</span> <span class="k">as</span> <span class="n">SparkRandomForestClassifier</span>
+<span class="kn">from</span> <span class="nn">pyspark.ml.evaluation</span> <span class="kn">import</span> <span class="n">BinaryClassificationEvaluator</span><span class="p">,</span> <span class="n">MulticlassClassificationEvaluator</span>
+<span class="kn">from</span> <span class="nn">pyspark.ml.tuning</span> <span class="kn">import</span> <span class="n">TrainValidationSplit</span><span class="p">,</span> <span class="n">ParamGridBuilder</span>
+
+<span class="c1"># Ajustes para optimización local:</span>
+<span class="c1"># - master(&quot;local[*]&quot;): Usa todos los cores disponibles en la máquina.</span>
+<span class="c1"># - config(&quot;spark.driver.memory&quot;, &quot;10g&quot;): Aumenta la memoria asignada al driver.</span>
+<span class="c1"># - setLogLevel(&quot;WARN&quot;): Reduce la cantidad de logs para una salida más limpia.</span>
+<span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span> \
+    <span class="o">.</span><span class="n">appName</span><span class="p">(</span><span class="s2">&quot;PySparkLoanClassification&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">master</span><span class="p">(</span><span class="s2">&quot;local[*]&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="s2">&quot;spark.driver.memory&quot;</span><span class="p">,</span> <span class="s2">&quot;10g&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+
+<span class="n">spark</span><span class="o">.</span><span class="n">sparkContext</span><span class="o">.</span><span class="n">setLogLevel</span><span class="p">(</span><span class="s2">&quot;WARN&quot;</span><span class="p">)</span>
+
+<span class="c1"># Ajustar particiones de shuffle: un parámetro clave para el rendimiento.</span>
+<span class="c1"># Evita tener demasiadas particiones pequeñas, lo que genera overhead.</span>
+<span class="n">num_cores</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">spark</span><span class="o">.</span><span class="n">sparkContext</span><span class="o">.</span><span class="n">defaultParallelism</span><span class="p">)</span>
+<span class="n">spark</span><span class="o">.</span><span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s2">&quot;spark.sql.shuffle.partitions&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">max</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="n">num_cores</span> <span class="o">*</span> <span class="mi">4</span><span class="p">)))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Spark iniciado. Usando </span><span class="si">{</span><span class="n">num_cores</span><span class="si">}</span><span class="s2"> cores.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Spark iniciado. Usando 12 cores.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="definicion-de-rutas-y-carga-de-datos">
+<h3>2. Definición de Rutas y Carga de Datos<a class="headerlink" href="#definicion-de-rutas-y-carga-de-datos" title="Link to this heading">#</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">PROCESSED_DATA_PATH</span> <span class="o">=</span> <span class="s1">&#39;data/processed/loans_cleaned.parquet&#39;</span>
+<span class="n">MODEL_PATH</span> <span class="o">=</span> <span class="s1">&#39;models/pyspark_random_forest&#39;</span>
+<span class="n">RESULTS_PATH</span> <span class="o">=</span> <span class="s1">&#39;results/pyspark_metrics.json&#39;</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">&#39;models&#39;</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="s1">&#39;results&#39;</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">df_spark</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">read</span><span class="o">.</span><span class="n">parquet</span><span class="p">(</span><span class="n">PROCESSED_DATA_PATH</span><span class="p">)</span>
+<span class="c1"># Evitamos llamar a .count() repetidamente, ya que es una acción costosa.</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registros totales: </span><span class="si">{</span><span class="n">df_spark</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Registros totales: 1345310
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="preparacion-de-datos-division-reparticion-y-cache">
+<h3>3. Preparación de Datos: División, Repartición y Cache<a class="headerlink" href="#preparacion-de-datos-division-reparticion-y-cache" title="Link to this heading">#</a></h3>
+<p>Este es un paso crucial para el rendimiento. Dividimos los datos y luego los <code class="docutils literal notranslate"><span class="pre">repartition</span></code> y <code class="docutils literal notranslate"><span class="pre">cache</span></code>.</p>
+<ul class="simple">
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">repartition</span></code></strong>: Asegura que los datos se distribuyan uniformemente entre los cores, maximizando el paralelismo.</p></li>
+<li><p><strong><code class="docutils literal notranslate"><span class="pre">cache</span></code></strong>: Almacena el DataFrame en memoria después de la primera acción. Esto evita que Spark tenga que volver a calcularlo desde el principio en cada paso posterior.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Dividir datos una sola vez y cachear; repartir para buen paralelismo</span>
+<span class="n">train_data</span><span class="p">,</span> <span class="n">test_data</span> <span class="o">=</span> <span class="n">df_spark</span><span class="o">.</span><span class="n">randomSplit</span><span class="p">([</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">],</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="c1"># Reparticionamos para que cada core tenga una cantidad de trabajo razonable</span>
+<span class="n">train_data</span> <span class="o">=</span> <span class="n">train_data</span><span class="o">.</span><span class="n">repartition</span><span class="p">(</span><span class="n">num_cores</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span>
+<span class="n">test_data</span> <span class="o">=</span> <span class="n">test_data</span><span class="o">.</span><span class="n">repartition</span><span class="p">(</span><span class="n">num_cores</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span>
+
+<span class="c1"># Spark es &quot;lazy&quot;, por lo que las transformaciones no se ejecutan hasta que se llama a una acción.</span>
+<span class="c1"># Usamos .count() para &quot;materializar&quot; la caché y forzar la ejecución de los pasos anteriores.</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registros de entrenamiento (cacheados): </span><span class="si">{</span><span class="n">train_data</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Registros de prueba (cacheados): </span><span class="si">{</span><span class="n">test_data</span><span class="o">.</span><span class="n">count</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Registros de entrenamiento (cacheados): 1076235
+Registros de prueba (cacheados): 269075
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="construccion-del-pipeline-de-pyspark-ml">
+<h3>4. Construcción del Pipeline de PySpark ML<a class="headerlink" href="#construccion-del-pipeline-de-pyspark-ml" title="Link to this heading">#</a></h3>
+<p>El pipeline define las etapas de preprocesamiento y modelado. Usamos una forma más robusta de identificar los tipos de columnas.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">label_col</span> <span class="o">=</span> <span class="s1">&#39;default&#39;</span>
+<span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df_spark</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span> <span class="o">!=</span> <span class="n">label_col</span><span class="p">]</span>
+
+<span class="n">categorical_cols</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">numerical_cols</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># Identificar columnas por su tipo de dato real en el schema</span>
+<span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">df_spark</span><span class="o">.</span><span class="n">schema</span><span class="o">.</span><span class="n">fields</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">field</span><span class="o">.</span><span class="n">name</span> <span class="ow">in</span> <span class="n">features</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">dataType</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">StringType</span><span class="p">):</span>
+            <span class="n">categorical_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">dataType</span><span class="p">,</span> <span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">IntegerType</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">DoubleType</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">FloatType</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">LongType</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">ShortType</span><span class="p">)):</span>
+            <span class="n">numerical_cols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">field</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Columnas Categóricas: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">categorical_cols</span><span class="p">)</span><span class="si">}</span><span class="s2">, Columnas Numéricas: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">numerical_cols</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># --- Etapas del Pipeline ---</span>
+<span class="n">imputer</span> <span class="o">=</span> <span class="n">Imputer</span><span class="p">(</span><span class="n">strategy</span><span class="o">=</span><span class="s1">&#39;median&#39;</span><span class="p">,</span>
+                  <span class="n">inputCols</span><span class="o">=</span><span class="n">numerical_cols</span><span class="p">,</span>
+                  <span class="n">outputCols</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">_imputed&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">numerical_cols</span><span class="p">])</span>
+
+<span class="n">indexers</span> <span class="o">=</span> <span class="p">[</span><span class="n">StringIndexer</span><span class="p">(</span><span class="n">inputCol</span><span class="o">=</span><span class="n">c</span><span class="p">,</span> <span class="n">outputCol</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">_index&quot;</span><span class="p">,</span> <span class="n">handleInvalid</span><span class="o">=</span><span class="s1">&#39;keep&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">categorical_cols</span><span class="p">]</span>
+<span class="n">encoders</span> <span class="o">=</span> <span class="p">[</span><span class="n">OneHotEncoder</span><span class="p">(</span><span class="n">inputCol</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">_index&quot;</span><span class="p">,</span> <span class="n">outputCol</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">_vec&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">categorical_cols</span><span class="p">]</span>
+
+<span class="n">assembler_inputs</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">_imputed&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">numerical_cols</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="s2">_vec&quot;</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">categorical_cols</span><span class="p">]</span>
+<span class="n">assembler</span> <span class="o">=</span> <span class="n">VectorAssembler</span><span class="p">(</span><span class="n">inputCols</span><span class="o">=</span><span class="n">assembler_inputs</span><span class="p">,</span> <span class="n">outputCol</span><span class="o">=</span><span class="s2">&quot;features&quot;</span><span class="p">)</span>
+
+<span class="n">rf</span> <span class="o">=</span> <span class="n">SparkRandomForestClassifier</span><span class="p">(</span><span class="n">labelCol</span><span class="o">=</span><span class="n">label_col</span><span class="p">,</span> <span class="n">featuresCol</span><span class="o">=</span><span class="s2">&quot;features&quot;</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+
+<span class="c1"># Unir todas las etapas en un único pipeline</span>
+<span class="n">all_stages</span> <span class="o">=</span> <span class="p">[</span><span class="n">imputer</span><span class="p">]</span> <span class="o">+</span> <span class="n">indexers</span> <span class="o">+</span> <span class="n">encoders</span> <span class="o">+</span> <span class="p">[</span><span class="n">assembler</span><span class="p">,</span> <span class="n">rf</span><span class="p">]</span>
+<span class="n">pipeline</span> <span class="o">=</span> <span class="n">SparkPipeline</span><span class="p">(</span><span class="n">stages</span><span class="o">=</span><span class="n">all_stages</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Columnas Categóricas: 3, Columnas Numéricas: 6
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="entrenamiento-y-ajuste-de-hiperparametros-con-trainvalidationsplit">
+<h3>5. Entrenamiento y Ajuste de Hiperparámetros con TrainValidationSplit<a class="headerlink" href="#entrenamiento-y-ajuste-de-hiperparametros-con-trainvalidationsplit" title="Link to this heading">#</a></h3>
+<p>Para acelerar la búsqueda de hiperparámetros, usamos <code class="docutils literal notranslate"><span class="pre">TrainValidationSplit</span></code> en lugar de <code class="docutils literal notranslate"><span class="pre">CrossValidator</span></code>.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">CrossValidator</span></code> entrena <code class="docutils literal notranslate"><span class="pre">k</span></code> modelos por cada combinación de hiperparámetros (ej: 3 pliegues = 3 entrenamientos).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TrainValidationSplit</span></code> divide los datos de entrenamiento una sola vez (ej: 80/20) y entrena solo un modelo por combinación. Es mucho más rápido y es ideal para desarrollos iniciales o datasets muy grandes.</p></li>
+</ul>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Definir el grid de parámetros</span>
+<span class="n">paramGrid</span> <span class="o">=</span> <span class="n">ParamGridBuilder</span><span class="p">()</span> \
+    <span class="o">.</span><span class="n">addGrid</span><span class="p">(</span><span class="n">rf</span><span class="o">.</span><span class="n">numTrees</span><span class="p">,</span> <span class="p">[</span><span class="mi">50</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span> \
+    <span class="o">.</span><span class="n">addGrid</span><span class="p">(</span><span class="n">rf</span><span class="o">.</span><span class="n">maxDepth</span><span class="p">,</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">])</span> \
+    <span class="o">.</span><span class="n">build</span><span class="p">()</span>
+
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">BinaryClassificationEvaluator</span><span class="p">(</span><span class="n">labelCol</span><span class="o">=</span><span class="n">label_col</span><span class="p">,</span> <span class="n">metricName</span><span class="o">=</span><span class="s2">&quot;areaUnderROC&quot;</span><span class="p">)</span>
+
+<span class="c1"># Configurar TrainValidationSplit</span>
+<span class="n">tvs</span> <span class="o">=</span> <span class="n">TrainValidationSplit</span><span class="p">(</span>
+    <span class="n">estimator</span><span class="o">=</span><span class="n">pipeline</span><span class="p">,</span>
+    <span class="n">estimatorParamMaps</span><span class="o">=</span><span class="n">paramGrid</span><span class="p">,</span>
+    <span class="n">evaluator</span><span class="o">=</span><span class="n">evaluator</span><span class="p">,</span>
+    <span class="n">trainRatio</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>   <span class="c1"># 80% de los datos de entrenamiento se usan para entrenar, 20% para validar</span>
+    <span class="n">parallelism</span><span class="o">=</span><span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num_cores</span> <span class="o">//</span> <span class="mi">2</span><span class="p">)</span>  <span class="c1"># Controla cuántos modelos se entrenan en paralelo</span>
+<span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Iniciando TrainValidationSplit...&quot;</span><span class="p">)</span>
+<span class="n">start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">tvs</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_data</span><span class="p">)</span>
+<span class="n">training_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">start_time</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Entrenamiento completado en </span><span class="si">{</span><span class="n">training_time</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> segundos.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Iniciando TrainValidationSplit...
+Entrenamiento completado en 484.3 segundos.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="evaluacion-y-guardado-del-modelo">
+<h3>6. Evaluación y Guardado del Modelo<a class="headerlink" href="#evaluacion-y-guardado-del-modelo" title="Link to this heading">#</a></h3>
+<p>Finalmente, evaluamos el mejor modelo en el conjunto de prueba y guardamos tanto el modelo como las métricas.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Realizar predicciones en el conjunto de prueba</span>
+<span class="n">predictions</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">test_data</span><span class="p">)</span>
+
+<span class="c1"># Calcular ROC AUC</span>
+<span class="n">auc</span> <span class="o">=</span> <span class="n">evaluator</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
+
+<span class="c1"># Función auxiliar para calcular otras métricas</span>
+<span class="k">def</span> <span class="nf">get_multiclass_metric</span><span class="p">(</span><span class="n">metric_name</span><span class="p">,</span> <span class="n">preds</span><span class="p">):</span>
+    <span class="n">ev</span> <span class="o">=</span> <span class="n">MulticlassClassificationEvaluator</span><span class="p">(</span><span class="n">labelCol</span><span class="o">=</span><span class="n">label_col</span><span class="p">,</span> <span class="n">predictionCol</span><span class="o">=</span><span class="s2">&quot;prediction&quot;</span><span class="p">,</span> <span class="n">metricName</span><span class="o">=</span><span class="n">metric_name</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">ev</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">preds</span><span class="p">)</span>
+
+<span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;Accuracy&quot;</span><span class="p">:</span> <span class="n">get_multiclass_metric</span><span class="p">(</span><span class="s2">&quot;accuracy&quot;</span><span class="p">,</span> <span class="n">predictions</span><span class="p">),</span>
+    <span class="s2">&quot;Precision&quot;</span><span class="p">:</span> <span class="n">get_multiclass_metric</span><span class="p">(</span><span class="s2">&quot;weightedPrecision&quot;</span><span class="p">,</span> <span class="n">predictions</span><span class="p">),</span>
+    <span class="s2">&quot;Recall&quot;</span><span class="p">:</span> <span class="n">get_multiclass_metric</span><span class="p">(</span><span class="s2">&quot;weightedRecall&quot;</span><span class="p">,</span> <span class="n">predictions</span><span class="p">),</span>
+    <span class="s2">&quot;F1-score&quot;</span><span class="p">:</span> <span class="n">get_multiclass_metric</span><span class="p">(</span><span class="s2">&quot;f1&quot;</span><span class="p">,</span> <span class="n">predictions</span><span class="p">),</span>
+    <span class="s2">&quot;ROC AUC&quot;</span><span class="p">:</span> <span class="n">auc</span>
+<span class="p">}</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Métricas de evaluación en el conjunto de prueba:&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">metric</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">metrics</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;- </span><span class="si">{</span><span class="n">metric</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">value</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># Guardar el mejor modelo (pipeline completo)</span>
+<span class="n">best_model_spark</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">bestModel</span>
+<span class="n">best_model_spark</span><span class="o">.</span><span class="n">write</span><span class="p">()</span><span class="o">.</span><span class="n">overwrite</span><span class="p">()</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">MODEL_PATH</span><span class="p">)</span>
+
+<span class="c1"># Guardar los resultados en formato JSON</span>
+<span class="n">results</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;metrics&quot;</span><span class="p">:</span> <span class="n">metrics</span><span class="p">,</span> <span class="s2">&quot;training_time_seconds&quot;</span><span class="p">:</span> <span class="n">training_time</span><span class="p">}</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">RESULTS_PATH</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">results</span><span class="p">,</span> <span class="n">f</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Modelo guardado en: &#39;</span><span class="si">{</span><span class="n">MODEL_PATH</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Resultados guardados en: &#39;</span><span class="si">{</span><span class="n">RESULTS_PATH</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Métricas de evaluación en el conjunto de prueba:
+- Accuracy: 0.8011
+- Precision: 0.6418
+- Recall: 0.8011
+- F1-score: 0.7126
+- ROC AUC: 0.6947
+
+Modelo guardado en: &#39;models/pyspark_random_forest&#39;
+Resultados guardados en: &#39;results/pyspark_metrics.json&#39;
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<section id="detener-la-sesion-de-spark">
+<h3>7. Detener la Sesión de Spark<a class="headerlink" href="#detener-la-sesion-de-spark" title="Link to this heading">#</a></h3>
+<p>Es una buena práctica detener explícitamente la <code class="docutils literal notranslate"><span class="pre">SparkSession</span></code> para liberar todos los recursos del clúster.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">spark</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SparkSession detenida.&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>SparkSession detenida.
+</pre></div>
+</div>
+</div>
+</div>
+</section>
+<hr class="docutils" />
+<section id="fin-del-notebook-3">
+<h3>Fin del Notebook 3<a class="headerlink" href="#fin-del-notebook-3" title="Link to this heading">#</a></h3>
+</section>
+</section>
+<section id="hemos-implementado-un-pipeline-de-modelado-optimizado-con-pyspark-listo-para-ser-comparado-con-el-enfoque-de-scikit-learn">
+<h2>Hemos implementado un pipeline de modelado optimizado con PySpark, listo para ser comparado con el enfoque de Scikit-learn.<a class="headerlink" href="#hemos-implementado-un-pipeline-de-modelado-optimizado-con-pyspark-listo-para-ser-comparado-con-el-enfoque-de-scikit-learn" title="Link to this heading">#</a></h2>
+</section>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "binder-examples/jupyter-stacks-datascience",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./."
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="model.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Notebook 2: Modelado con Scikit-learn</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="lime.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Interpretabilidad del Modelo con LIME</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#objetivo">Objetivo</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#importacion-de-librerias-e-inicio-de-sparksession">1. Importación de Librerías e Inicio de SparkSession</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definicion-de-rutas-y-carga-de-datos">2. Definición de Rutas y Carga de Datos</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#preparacion-de-datos-division-reparticion-y-cache">3. Preparación de Datos: División, Repartición y Cache</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#construccion-del-pipeline-de-pyspark-ml">4. Construcción del Pipeline de PySpark ML</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#entrenamiento-y-ajuste-de-hiperparametros-con-trainvalidationsplit">5. Entrenamiento y Ajuste de Hiperparámetros con TrainValidationSplit</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#evaluacion-y-guardado-del-modelo">6. Evaluación y Guardado del Modelo</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#detener-la-sesion-de-spark">7. Detener la Sesión de Spark</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fin-del-notebook-3">Fin del Notebook 3</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#hemos-implementado-un-pipeline-de-modelado-optimizado-con-pyspark-listo-para-ser-comparado-con-el-enfoque-de-scikit-learn">Hemos implementado un pipeline de modelado optimizado con PySpark, listo para ser comparado con el enfoque de Scikit-learn.</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By José Menco, Camilo Vargas, Iván Ramirez
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
